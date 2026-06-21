@@ -1,220 +1,1186 @@
 <!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
-		<title>測試合併場景用</title>
-		<style>
-html, body, #canvas {
-	margin: 0;
-	padding: 0;
-	border: 0;
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#667eea">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="生活助手">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <title>我的生活助手</title>
+  <style>
+    :root {
+      --primary: #667eea;
+      --primary-dark: #5a6fd6;
+      --secondary: #764ba2;
+      --accent: #f093fb;
+      --success: #48bb78;
+      --warning: #ed8936;
+      --danger: #fc5c7d;
+      --bg: #f0f2f5;
+      --card: #ffffff;
+      --text: #2d3748;
+      --text-light: #718096;
+      --border: #e2e8f0;
+      --shadow: 0 4px 20px rgba(0,0,0,.08);
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang TC', 'Noto Sans TC', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      padding-bottom: 80px;
+      overflow-x: hidden;
+    }
+    /* ── Header ── */
+    .app-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      padding: 20px 20px 36px;
+      position: relative;
+      overflow: hidden;
+    }
+    .app-header::after {
+      content: '';
+      position: absolute;
+      bottom: -20px; left: 0; right: 0;
+      height: 40px;
+      background: var(--bg);
+      border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: center; }
+    .app-title { font-size: 1.3rem; font-weight: 700; letter-spacing: .5px; }
+    .header-date { font-size: .85rem; opacity: .85; margin-top: 4px; }
+    .header-greeting { font-size: 1.6rem; font-weight: 800; margin-top: 10px; }
+    .header-time { font-size: 2.8rem; font-weight: 900; letter-spacing: -1px; line-height: 1; margin-top: 4px; }
+    /* ── Bottom nav ── */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--card);
+      display: flex;
+      box-shadow: 0 -4px 20px rgba(0,0,0,.08);
+      z-index: 100;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .nav-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 10px 0 8px;
+      border: none; background: none; cursor: pointer;
+      color: var(--text-light); font-size: .65rem; font-weight: 600;
+      transition: color .2s;
+      gap: 4px;
+    }
+    .nav-btn.active { color: var(--primary); }
+    .nav-btn svg { width: 22px; height: 22px; }
+    /* ── Pages ── */
+    .page { display: none; padding: 0 16px 16px; }
+    .page.active { display: block; }
+    /* ── Cards ── */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+    }
+    .card-title {
+      font-size: 1rem; font-weight: 700;
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 14px; color: var(--text);
+    }
+    .card-title svg { width: 18px; height: 18px; color: var(--primary); }
+    /* ── Section label ── */
+    .section-label {
+      font-size: .8rem; font-weight: 700; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: 1px;
+      margin: 18px 0 8px;
+    }
+    /* ── Dashboard stats ── */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .stat-card {
+      background: var(--card); border-radius: var(--radius-sm);
+      padding: 16px; box-shadow: var(--shadow);
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .stat-icon { font-size: 1.6rem; }
+    .stat-value { font-size: 1.8rem; font-weight: 900; color: var(--primary); }
+    .stat-label { font-size: .78rem; color: var(--text-light); font-weight: 600; }
+    /* ── Todo ── */
+    .add-form { display: flex; gap: 8px; margin-bottom: 14px; }
+    .add-form input, .add-form select, .note-input, .budget-input {
+      flex: 1; border: 2px solid var(--border);
+      border-radius: var(--radius-sm); padding: 10px 14px;
+      font-size: .9rem; color: var(--text);
+      background: var(--bg); outline: none;
+      transition: border-color .2s;
+    }
+    .add-form input:focus, .note-input:focus, .budget-input:focus { border-color: var(--primary); }
+    .add-btn {
+      width: 44px; height: 44px; border-radius: 12px;
+      border: none; background: var(--primary); color: white;
+      font-size: 1.4rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: background .2s, transform .1s;
+    }
+    .add-btn:active { transform: scale(.93); background: var(--primary-dark); }
+    .todo-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .todo-item:last-child { border-bottom: none; }
+    .todo-check {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 2.5px solid var(--border); cursor: pointer;
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      transition: background .2s, border-color .2s;
+    }
+    .todo-check.done { background: var(--success); border-color: var(--success); }
+    .todo-check.done::after { content: '✓'; color: white; font-size: .75rem; font-weight: 800; }
+    .todo-text { flex: 1; font-size: .92rem; line-height: 1.4; }
+    .todo-text.done { text-decoration: line-through; color: var(--text-light); }
+    .todo-tag {
+      font-size: .7rem; font-weight: 700; padding: 2px 8px;
+      border-radius: 20px; background: var(--bg);
+    }
+    .tag-work { color: #3182ce; }
+    .tag-life { color: #38a169; }
+    .tag-health { color: #e53e3e; }
+    .del-btn {
+      width: 28px; height: 28px; border-radius: 8px; border: none;
+      background: var(--bg); color: var(--text-light); cursor: pointer;
+      font-size: 1rem; display: flex; align-items: center; justify-content: center;
+      transition: background .2s;
+    }
+    .del-btn:hover { background: #fed7d7; color: var(--danger); }
+    /* ── Habit tracker ── */
+    .habit-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 0; border-bottom: 1px solid var(--border);
+    }
+    .habit-item:last-child { border-bottom: none; }
+    .habit-emoji { font-size: 1.5rem; width: 36px; text-align: center; }
+    .habit-info { flex: 1; }
+    .habit-name { font-size: .92rem; font-weight: 600; }
+    .habit-streak { font-size: .78rem; color: var(--text-light); margin-top: 2px; }
+    .habit-dots { display: flex; gap: 4px; }
+    .habit-dot {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--border); cursor: pointer; transition: background .2s;
+    }
+    .habit-dot.done { background: var(--success); }
+    .habit-dot.today-dot { border: 2px solid var(--primary); }
+    .habit-toggle {
+      width: 40px; height: 24px; border-radius: 12px;
+      background: var(--border); cursor: pointer; position: relative;
+      transition: background .2s; border: none; flex-shrink: 0;
+    }
+    .habit-toggle::after {
+      content: ''; position: absolute; top: 3px; left: 3px;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: white; transition: transform .2s;
+    }
+    .habit-toggle.on { background: var(--success); }
+    .habit-toggle.on::after { transform: translateX(16px); }
+    /* ── Notes ── */
+    .note-input {
+      width: 100%; height: 100px; resize: none;
+      font-family: inherit; line-height: 1.6;
+    }
+    .note-card {
+      background: linear-gradient(135deg, #fffbe7 0%, #fff8dc 100%);
+      border-radius: var(--radius-sm); padding: 14px;
+      margin-bottom: 10px; position: relative;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      border-left: 4px solid var(--warning);
+    }
+    .note-card-text { font-size: .9rem; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+    .note-card-time { font-size: .72rem; color: #a0855b; margin-top: 8px; }
+    .note-card .del-btn { position: absolute; top: 10px; right: 10px; }
+    /* ── Budget ── */
+    .budget-summary { display: flex; gap: 10px; margin-bottom: 14px; }
+    .budget-box {
+      flex: 1; border-radius: var(--radius-sm); padding: 14px;
+      text-align: center;
+    }
+    .budget-box.income { background: #e6ffed; }
+    .budget-box.expense { background: #fff0f0; }
+    .budget-box.balance { background: #eff6ff; }
+    .budget-box-label { font-size: .7rem; font-weight: 700; color: var(--text-light); }
+    .budget-box-value { font-size: 1.3rem; font-weight: 900; margin-top: 4px; }
+    .budget-box.income .budget-box-value { color: var(--success); }
+    .budget-box.expense .budget-box-value { color: var(--danger); }
+    .budget-box.balance .budget-box-value { color: var(--primary); }
+    .budget-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+    .budget-row { display: flex; gap: 8px; }
+    .budget-row select { flex: 0 0 90px; border: 2px solid var(--border); border-radius: var(--radius-sm); padding: 10px; font-size: .9rem; background: var(--bg); outline: none; }
+    .budget-row select:focus { border-color: var(--primary); }
+    .budget-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .budget-item:last-child { border-bottom: none; }
+    .budget-cat-icon { font-size: 1.3rem; width: 32px; text-align: center; }
+    .budget-item-info { flex: 1; }
+    .budget-item-desc { font-size: .9rem; font-weight: 600; }
+    .budget-item-date { font-size: .75rem; color: var(--text-light); }
+    .budget-item-amount { font-size: 1rem; font-weight: 800; }
+    .budget-item-amount.income { color: var(--success); }
+    .budget-item-amount.expense { color: var(--danger); }
+    /* ── Progress bar ── */
+    .progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width .5s; }
+    /* ── Mood ── */
+    .mood-row { display: flex; gap: 10px; justify-content: center; margin: 10px 0; }
+    .mood-btn {
+      font-size: 1.8rem; background: var(--bg); border: 3px solid transparent;
+      border-radius: 50%; width: 52px; height: 52px;
+      cursor: pointer; transition: border-color .2s, transform .1s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .mood-btn.selected { border-color: var(--primary); transform: scale(1.15); }
+    .mood-log { font-size: .85rem; color: var(--text-light); text-align: center; margin-top: 6px; min-height: 20px; }
+    /* ── Water tracker ── */
+    .water-row { display: flex; align-items: center; gap: 16px; }
+    .water-cups { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+    .water-cup {
+      font-size: 1.4rem; cursor: pointer;
+      filter: grayscale(1) opacity(.4);
+      transition: filter .2s, transform .1s;
+    }
+    .water-cup.filled { filter: none; }
+    .water-cup:active { transform: scale(1.3); }
+    .water-count { font-size: 1.1rem; font-weight: 800; color: var(--primary); white-space: nowrap; }
+    /* ── Empty state ── */
+    .empty { text-align: center; padding: 30px 0; color: var(--text-light); font-size: .9rem; }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 8px; }
+    /* ── Floating badge ── */
+    .badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--danger); color: white;
+      border-radius: 50%; width: 16px; height: 16px; font-size: .6rem; font-weight: 800;
+      margin-left: 2px; vertical-align: top;
+    }
+    /* ── Utility ── */
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .text-sm { font-size: .82rem; color: var(--text-light); }
+    .mt-8 { margin-top: 8px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--bg); border-radius: 20px;
+      padding: 4px 10px; font-size: .78rem; font-weight: 600; color: var(--text-light);
+    }
+    /* ── Pomodoro ── */
+    .pomo-ring {
+      position: relative; width: 180px; height: 180px;
+      margin: 0 auto 16px;
+    }
+    .pomo-ring svg { transform: rotate(-90deg); }
+    .pomo-ring-bg { fill: none; stroke: var(--border); stroke-width: 10; }
+    .pomo-ring-fill { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset .5s; }
+    .pomo-ring.focus .pomo-ring-fill { stroke: var(--danger); }
+    .pomo-ring.rest  .pomo-ring-fill { stroke: var(--success); }
+    .pomo-center {
+      position: absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      text-align: center;
+    }
+    .pomo-time { font-size: 2.4rem; font-weight: 900; letter-spacing: -1px; }
+    .pomo-label { font-size: .75rem; font-weight: 700; color: var(--text-light); margin-top: 2px; }
+    .pomo-btns { display: flex; gap: 10px; justify-content: center; }
+    .pomo-btn {
+      border: none; border-radius: 50px; padding: 12px 28px;
+      font-size: .95rem; font-weight: 700; cursor: pointer; transition: opacity .2s, transform .1s;
+    }
+    .pomo-btn:active { transform: scale(.95); }
+    .pomo-btn.start { background: var(--danger); color: white; }
+    .pomo-btn.pause { background: var(--warning); color: white; }
+    .pomo-btn.reset { background: var(--bg); color: var(--text-light); }
+    .pomo-sessions { display: flex; gap: 6px; justify-content: center; margin-top: 12px; }
+    .pomo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
+    .pomo-dot.done { background: var(--danger); }
+    /* ── Challenge ── */
+    .challenge-item { padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .challenge-item:last-child { border-bottom: none; }
+    .challenge-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .challenge-emoji { font-size: 1.4rem; }
+    .challenge-info { flex: 1; }
+    .challenge-name { font-size: .93rem; font-weight: 700; }
+    .challenge-sub { font-size: .76rem; color: var(--text-light); margin-top: 2px; }
+    .challenge-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+    .challenge-cell {
+      width: 22px; height: 22px; border-radius: 5px;
+      background: var(--border); cursor: pointer; transition: background .15s;
+    }
+    .challenge-cell.done { background: linear-gradient(135deg,var(--primary),var(--accent)); }
+    .challenge-cell.today { outline: 2px solid var(--primary); outline-offset: 1px; }
+    /* ── Reflect ── */
+    .reflect-q { font-size: .88rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .reflect-input {
+      width: 100%; border: 2px solid var(--border); border-radius: var(--radius-sm);
+      padding: 10px 12px; font-size: .88rem; font-family: inherit;
+      background: var(--bg); outline: none; resize: none; min-height: 60px; line-height: 1.5;
+      transition: border-color .2s;
+    }
+    .reflect-input:focus { border-color: var(--primary); }
+    .reflect-block { margin-bottom: 14px; }
+    .reflect-saved { background: #f0fff4; border-left: 4px solid var(--success); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 8px; }
+    .reflect-saved-date { font-size: .72rem; color: var(--text-light); margin-bottom: 6px; font-weight: 700; }
+    .reflect-saved-q { font-size: .78rem; color: var(--text-light); }
+    .reflect-saved-a { font-size: .88rem; margin-top: 2px; white-space: pre-wrap; }
+    /* ── Quote ── */
+    .quote-box {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border-radius: var(--radius); padding: 20px; color: white; text-align: center; margin-bottom: 14px;
+    }
+    .quote-text { font-size: 1rem; font-weight: 600; line-height: 1.6; }
+    .quote-author { font-size: .8rem; opacity: .75; margin-top: 8px; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="app-header">
+  <div class="header-top">
+    <div>
+      <div class="app-title">🌟 我的生活助手</div>
+      <div class="header-date" id="headerDate"></div>
+    </div>
+    <div id="headerWeather" style="font-size:1.8rem"></div>
+  </div>
+  <div class="header-greeting" id="headerGreeting"></div>
+  <div class="header-time" id="headerTime"></div>
+</div>
+
+<!-- Pages -->
+<div style="padding-top:8px">
+
+  <!-- Dashboard -->
+  <div class="page active" id="page-dashboard">
+    <p class="section-label">今日概覽</p>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value" id="stat-todo">0</div>
+        <div class="stat-label">待辦完成率</div>
+        <div class="progress-bar mt-8"><div class="progress-fill" id="prog-todo" style="width:0%"></div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🔥</div>
+        <div class="stat-value" id="stat-habit">0</div>
+        <div class="stat-label">習慣完成</div>
+        <div class="progress-bar mt-8"><div class="progress-fill" id="prog-habit" style="width:0%"></div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💧</div>
+        <div class="stat-value" id="stat-water">0</div>
+        <div class="stat-label">今日喝水 (杯)</div>
+        <div class="progress-bar mt-8"><div class="progress-fill" id="prog-water" style="width:0%"></div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-value" id="stat-budget">$0</div>
+        <div class="stat-label">本月結餘</div>
+        <div class="progress-bar mt-8"><div class="progress-fill" id="prog-budget" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <p class="section-label">今日心情</p>
+    <div class="card">
+      <div class="mood-row">
+        <button class="mood-btn" data-mood="😊" onclick="setMood('😊',this)">😊</button>
+        <button class="mood-btn" data-mood="😄" onclick="setMood('😄',this)">😄</button>
+        <button class="mood-btn" data-mood="😐" onclick="setMood('😐',this)">😐</button>
+        <button class="mood-btn" data-mood="😔" onclick="setMood('😔',this)">😔</button>
+        <button class="mood-btn" data-mood="😤" onclick="setMood('😤',this)">😤</button>
+      </div>
+      <div class="mood-log" id="moodLog">點擊選擇今天的心情</div>
+    </div>
+
+    <p class="section-label">喝水追蹤</p>
+    <div class="card">
+      <div class="water-row">
+        <div class="water-cups" id="waterCups"></div>
+        <div class="water-count" id="waterCount">0/8 杯</div>
+      </div>
+    </div>
+
+    <p class="section-label">近期待辦</p>
+    <div class="card" id="dash-todos">
+      <div class="empty"><div class="empty-icon">📋</div>無待辦事項</div>
+    </div>
+  </div>
+
+  <!-- Todos -->
+  <div class="page" id="page-todo">
+    <p class="section-label">新增待辦</p>
+    <div class="card">
+      <div class="add-form">
+        <input type="text" id="todoInput" placeholder="輸入待辦事項…" maxlength="80">
+        <select id="todoTag" style="flex:0 0 72px;border:2px solid var(--border);border-radius:var(--radius-sm);padding:10px;background:var(--bg);outline:none;font-size:.85rem">
+          <option value="life">生活</option>
+          <option value="work">工作</option>
+          <option value="health">健康</option>
+        </select>
+        <button class="add-btn" onclick="addTodo()">＋</button>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="filterTodo('all')" id="filter-all" class="chip" style="cursor:pointer;background:var(--primary);color:white">全部</button>
+        <button onclick="filterTodo('pending')" id="filter-pending" class="chip" style="cursor:pointer">待完成</button>
+        <button onclick="filterTodo('done')" id="filter-done" class="chip" style="cursor:pointer">已完成</button>
+      </div>
+    </div>
+    <div class="card" id="todoList">
+      <div class="empty"><div class="empty-icon">📋</div>還沒有待辦事項</div>
+    </div>
+  </div>
+
+  <!-- Habits -->
+  <div class="page" id="page-habit">
+    <p class="section-label">新增習慣</p>
+    <div class="card">
+      <div class="add-form">
+        <input type="text" id="habitName" placeholder="習慣名稱…" maxlength="30">
+        <select id="habitEmoji" style="flex:0 0 60px;border:2px solid var(--border);border-radius:var(--radius-sm);padding:10px;background:var(--bg);outline:none;font-size:1.1rem">
+          <option>🏃</option><option>📚</option><option>🧘</option><option>💊</option>
+          <option>🥗</option><option>😴</option><option>🖊️</option><option>🎵</option>
+        </select>
+        <button class="add-btn" onclick="addHabit()">＋</button>
+      </div>
+    </div>
+    <div class="card" id="habitList">
+      <div class="empty"><div class="empty-icon">🔥</div>新增你的習慣</div>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="page" id="page-notes">
+    <p class="section-label">新增筆記</p>
+    <div class="card">
+      <textarea class="note-input" id="noteInput" placeholder="記下你的想法、靈感…"></textarea>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px">
+        <button class="add-btn" style="width:auto;padding:0 16px;border-radius:10px;font-size:.9rem" onclick="addNote()">儲存筆記</button>
+      </div>
+    </div>
+    <div id="notesList"></div>
+  </div>
+
+  <!-- Budget -->
+  <div class="page" id="page-budget">
+    <div class="budget-summary">
+      <div class="budget-box income">
+        <div class="budget-box-label">收入</div>
+        <div class="budget-box-value" id="budgetIncome">$0</div>
+      </div>
+      <div class="budget-box expense">
+        <div class="budget-box-label">支出</div>
+        <div class="budget-box-value" id="budgetExpense">$0</div>
+      </div>
+      <div class="budget-box balance">
+        <div class="budget-box-label">結餘</div>
+        <div class="budget-box-value" id="budgetBalance">$0</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        新增記帳
+      </div>
+      <div class="budget-form">
+        <div class="budget-row">
+          <select id="budgetType" style="flex:0 0 72px;border:2px solid var(--border);border-radius:var(--radius-sm);padding:10px;background:var(--bg);outline:none;font-size:.9rem">
+            <option value="expense">支出</option>
+            <option value="income">收入</option>
+          </select>
+          <select id="budgetCat" style="flex:1;border:2px solid var(--border);border-radius:var(--radius-sm);padding:10px;background:var(--bg);outline:none;font-size:.9rem"></select>
+        </div>
+        <div class="budget-row">
+          <input class="budget-input" type="number" id="budgetAmount" placeholder="金額" min="0">
+          <input class="budget-input" type="text" id="budgetDesc" placeholder="描述（選填）" style="flex:1.5">
+        </div>
+        <button class="add-btn" style="width:100%;border-radius:10px;height:44px;font-size:.95rem;font-weight:700" onclick="addBudget()">新增記錄</button>
+      </div>
+    </div>
+    <p class="section-label">本月記錄</p>
+    <div class="card" id="budgetList">
+      <div class="empty"><div class="empty-icon">💰</div>尚無記帳記錄</div>
+    </div>
+  </div>
+
+  <!-- Self-Discipline -->
+  <div class="page" id="page-discipline">
+
+    <!-- Daily Quote -->
+    <div class="quote-box" id="quoteBox">
+      <div class="quote-text" id="quoteText"></div>
+      <div class="quote-author" id="quoteAuthor"></div>
+    </div>
+
+    <!-- Pomodoro -->
+    <p class="section-label">🍅 番茄鐘專注計時</p>
+    <div class="card">
+      <div class="pomo-ring focus" id="pomoRing">
+        <svg width="180" height="180" viewBox="0 0 180 180">
+          <circle class="pomo-ring-bg" cx="90" cy="90" r="80"/>
+          <circle class="pomo-ring-fill" id="pomoArc" cx="90" cy="90" r="80"
+            stroke-dasharray="502.65" stroke-dashoffset="0"/>
+        </svg>
+        <div class="pomo-center">
+          <div class="pomo-time" id="pomoTime">25:00</div>
+          <div class="pomo-label" id="pomoLabel">準備專注</div>
+        </div>
+      </div>
+      <div class="pomo-btns">
+        <button class="pomo-btn start" id="pomoBtnStart" onclick="pomoStart()">▶ 開始</button>
+        <button class="pomo-btn reset" onclick="pomoReset()">↺ 重置</button>
+      </div>
+      <div class="pomo-sessions" id="pomoSessions"></div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:14px">
+        <button onclick="setPomoMode(25,5)" class="chip" id="pomo-m-2525" style="cursor:pointer;background:var(--primary);color:white">25/5</button>
+        <button onclick="setPomoMode(50,10)" class="chip" id="pomo-m-5010" style="cursor:pointer">50/10</button>
+        <button onclick="setPomoMode(45,15)" class="chip" id="pomo-m-4515" style="cursor:pointer">45/15</button>
+      </div>
+    </div>
+
+    <!-- Challenge Tracker -->
+    <p class="section-label">🏆 N天挑戰打卡</p>
+    <div class="card">
+      <div class="add-form">
+        <input type="text" id="chalName" placeholder="挑戰名稱（如：每天跑步）" maxlength="20">
+        <select id="chalDays" style="flex:0 0 68px;border:2px solid var(--border);border-radius:var(--radius-sm);padding:10px;background:var(--bg);outline:none;font-size:.85rem">
+          <option value="21">21天</option>
+          <option value="30">30天</option>
+          <option value="66">66天</option>
+          <option value="100">100天</option>
+        </select>
+        <button class="add-btn" onclick="addChallenge()">＋</button>
+      </div>
+    </div>
+    <div class="card" id="challengeList">
+      <div class="empty"><div class="empty-icon">🏆</div>新增你的挑戰</div>
+    </div>
+
+    <!-- Evening Reflection -->
+    <p class="section-label">🌙 今日反思復盤</p>
+    <div class="card">
+      <div class="reflect-block">
+        <div class="reflect-q">✅ 今天完成了什麼值得肯定的事？</div>
+        <textarea class="reflect-input" id="ref1" placeholder="寫下來…" rows="2"></textarea>
+      </div>
+      <div class="reflect-block">
+        <div class="reflect-q">⚡ 今天有什麼拖延或沒做到的？原因是？</div>
+        <textarea class="reflect-input" id="ref2" placeholder="寫下來…" rows="2"></textarea>
+      </div>
+      <div class="reflect-block">
+        <div class="reflect-q">🎯 明天最重要的一件事是什麼？</div>
+        <textarea class="reflect-input" id="ref3" placeholder="寫下來…" rows="2"></textarea>
+      </div>
+      <button class="add-btn" style="width:100%;border-radius:10px;height:44px;font-size:.95rem;font-weight:700" onclick="saveReflect()">儲存今日反思</button>
+    </div>
+    <div id="reflectHistory"></div>
+
+  </div>
+
+</div><!-- end pages wrapper -->
+
+<!-- Bottom nav -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" onclick="showPage('dashboard',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    總覽
+  </button>
+  <button class="nav-btn" onclick="showPage('todo',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    待辦
+  </button>
+  <button class="nav-btn" onclick="showPage('habit',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    習慣
+  </button>
+  <button class="nav-btn" onclick="showPage('notes',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    筆記
+  </button>
+  <button class="nav-btn" onclick="showPage('budget',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 1 0 7H6"/></svg>
+    記帳
+  </button>
+  <button class="nav-btn" onclick="showPage('discipline',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    自律
+  </button>
+</nav>
+
+<script>
+// ─── Service Worker ───────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
 }
 
-body {
-	color: white;
-	background-color: black;
-	overflow: hidden;
-	touch-action: none;
+// ─── Storage helpers ───────────────────────────────────────────────────
+const S = {
+  get: (k, def) => { try { const v=localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch(e){ return def; } },
+  set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+
+// ─── Date / time helpers ──────────────────────────────────────────────
+const weekDays = ['日','一','二','三','四','五','六'];
+const months   = ['1','2','3','4','5','6','7','8','9','10','11','12'];
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function monthKey() { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+function fmtDate(ts) {
+  const d = new Date(ts);
+  return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+function last7Days() {
+  const days=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    days.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
+  }
+  return days;
 }
 
-#canvas {
-	display: block;
+// ─── Clock / header ───────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  const h = now.getHours();
+  document.getElementById('headerTime').textContent =
+    `${String(h).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('headerDate').textContent =
+    `${now.getFullYear()} 年 ${months[now.getMonth()]} 月 ${now.getDate()} 日　星期${weekDays[now.getDay()]}`;
+  const greeting = h<5?'夜深了 🌙':h<12?'早安 ☀️':h<14?'午安 🌤':h<18?'下午好 🌈':'晚安 🌙';
+  document.getElementById('headerGreeting').textContent = greeting;
+  const weathers = ['☀️','⛅','🌤','🌥','☁️'];
+  if(!document.getElementById('headerWeather').textContent)
+    document.getElementById('headerWeather').textContent = weathers[Math.floor(Math.random()*weathers.length)];
+}
+updateClock();
+setInterval(updateClock, 30000);
+
+// ─── Navigation ───────────────────────────────────────────────────────
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(name==='dashboard') refreshDashboard();
 }
 
-#canvas:focus {
-	outline: none;
+// ─── Mood ─────────────────────────────────────────────────────────────
+function loadMood() {
+  const moods = S.get('moods',{});
+  const td = todayKey();
+  if(moods[td]) {
+    document.querySelectorAll('.mood-btn').forEach(b=>{
+      b.classList.toggle('selected', b.dataset.mood===moods[td].emoji);
+    });
+    document.getElementById('moodLog').textContent = `今天心情：${moods[td].emoji}  ${moods[td].time}`;
+  }
+}
+function setMood(emoji, btn) {
+  const moods = S.get('moods',{});
+  const now = new Date();
+  moods[todayKey()] = { emoji, time: `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}` };
+  S.set('moods', moods);
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('moodLog').textContent = `今天心情：${emoji}`;
+}
+loadMood();
+
+// ─── Water ────────────────────────────────────────────────────────────
+function loadWater() {
+  const data = S.get('water',{});
+  const count = data[todayKey()] || 0;
+  renderWater(count);
+}
+function renderWater(count) {
+  const cups = document.getElementById('waterCups');
+  cups.innerHTML = '';
+  for(let i=0;i<8;i++){
+    const d=document.createElement('div');
+    d.className='water-cup'+(i<count?' filled':'');
+    d.textContent='💧';
+    d.onclick=()=>toggleWater(i+1);
+    cups.appendChild(d);
+  }
+  document.getElementById('waterCount').textContent=`${count}/8 杯`;
+}
+function toggleWater(idx) {
+  const data = S.get('water',{});
+  const td=todayKey();
+  const cur = data[td]||0;
+  data[td] = cur===idx ? idx-1 : idx;
+  S.set('water',data);
+  renderWater(data[td]);
+  refreshDashboard();
+}
+loadWater();
+
+// ─── Todos ────────────────────────────────────────────────────────────
+let todoFilter = 'all';
+const tagLabels = {work:'工作',life:'生活',health:'健康'};
+function addTodo() {
+  const input=document.getElementById('todoInput');
+  const tag=document.getElementById('todoTag').value;
+  const text=input.value.trim();
+  if(!text) return;
+  const todos=S.get('todos',[]);
+  todos.unshift({id:Date.now(),text,tag,done:false});
+  S.set('todos',todos);
+  input.value='';
+  renderTodos();
+  refreshDashboard();
+}
+document.getElementById('todoInput').addEventListener('keydown',e=>{ if(e.key==='Enter') addTodo(); });
+function toggleTodo(id) {
+  const todos=S.get('todos',[]);
+  const t=todos.find(x=>x.id===id);
+  if(t) t.done=!t.done;
+  S.set('todos',todos);
+  renderTodos();
+  refreshDashboard();
+}
+function deleteTodo(id) {
+  const todos=S.get('todos',[]).filter(x=>x.id!==id);
+  S.set('todos',todos);
+  renderTodos();
+  refreshDashboard();
+}
+function filterTodo(f) {
+  todoFilter=f;
+  ['all','pending','done'].forEach(v=>{
+    const el=document.getElementById('filter-'+v);
+    el.style.background = v===f?'var(--primary)':'var(--bg)';
+    el.style.color = v===f?'white':'var(--text-light)';
+  });
+  renderTodos();
+}
+function renderTodos() {
+  const todos=S.get('todos',[]);
+  const list=document.getElementById('todoList');
+  let filtered=todos;
+  if(todoFilter==='pending') filtered=todos.filter(t=>!t.done);
+  if(todoFilter==='done') filtered=todos.filter(t=>t.done);
+  if(!filtered.length){ list.innerHTML='<div class="empty"><div class="empty-icon">📋</div>沒有待辦事項</div>'; return; }
+  list.innerHTML=filtered.map(t=>`
+    <div class="todo-item">
+      <div class="todo-check${t.done?' done':''}" onclick="toggleTodo(${t.id})"></div>
+      <span class="todo-text${t.done?' done':''}">  ${escHtml(t.text)}</span>
+      <span class="todo-tag tag-${t.tag}">${tagLabels[t.tag]||t.tag}</span>
+      <button class="del-btn" onclick="deleteTodo(${t.id})">✕</button>
+    </div>`).join('');
+}
+renderTodos();
+
+// ─── Habits ───────────────────────────────────────────────────────────
+function addHabit() {
+  const name=document.getElementById('habitName').value.trim();
+  const emoji=document.getElementById('habitEmoji').value;
+  if(!name) return;
+  const habits=S.get('habits',[]);
+  habits.push({id:Date.now(),name,emoji,records:{}});
+  S.set('habits',habits);
+  document.getElementById('habitName').value='';
+  renderHabits();
+}
+document.getElementById('habitName').addEventListener('keydown',e=>{ if(e.key==='Enter') addHabit(); });
+function toggleHabitDay(id) {
+  const habits=S.get('habits',[]);
+  const h=habits.find(x=>x.id===id);
+  if(!h) return;
+  const td=todayKey();
+  h.records[td]=!h.records[td];
+  S.set('habits',habits);
+  renderHabits();
+  refreshDashboard();
+}
+function deleteHabit(id) {
+  const habits=S.get('habits',[]).filter(x=>x.id!==id);
+  S.set('habits',habits);
+  renderHabits();
+}
+function habitStreak(records) {
+  let streak=0, d=new Date();
+  while(true){
+    const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    if(records[k]) { streak++; d.setDate(d.getDate()-1); }
+    else break;
+  }
+  return streak;
+}
+function renderHabits() {
+  const habits=S.get('habits',[]);
+  const list=document.getElementById('habitList');
+  if(!habits.length){ list.innerHTML='<div class="empty"><div class="empty-icon">🔥</div>新增你的習慣</div>'; return; }
+  const days=last7Days();
+  list.innerHTML=habits.map(h=>{
+    const td=todayKey();
+    const streak=habitStreak(h.records);
+    const dots=days.map((d,i)=>`<div class="habit-dot${h.records[d]?' done':''}${i===6?' today-dot':''}"></div>`).join('');
+    return `<div class="habit-item">
+      <div class="habit-emoji">${h.emoji}</div>
+      <div class="habit-info">
+        <div class="habit-name">${escHtml(h.name)}</div>
+        <div class="habit-streak">🔥 連續 ${streak} 天</div>
+        <div class="habit-dots" style="margin-top:6px">${dots}</div>
+      </div>
+      <button class="habit-toggle${h.records[td]?' on':''}" onclick="toggleHabitDay(${h.id})" title="今日打卡"></button>
+      <button class="del-btn" onclick="deleteHabit(${h.id})">✕</button>
+    </div>`;
+  }).join('');
+}
+renderHabits();
+
+// ─── Notes ────────────────────────────────────────────────────────────
+function addNote() {
+  const input=document.getElementById('noteInput');
+  const text=input.value.trim();
+  if(!text) return;
+  const notes=S.get('notes',[]);
+  notes.unshift({id:Date.now(),text,ts:Date.now()});
+  S.set('notes',notes);
+  input.value='';
+  renderNotes();
+}
+function deleteNote(id) {
+  const notes=S.get('notes',[]).filter(x=>x.id!==id);
+  S.set('notes',notes);
+  renderNotes();
+}
+function renderNotes() {
+  const notes=S.get('notes',[]);
+  const list=document.getElementById('notesList');
+  if(!notes.length){ list.innerHTML='<div class="card"><div class="empty"><div class="empty-icon">📝</div>尚無筆記</div></div>'; return; }
+  list.innerHTML=notes.map(n=>`
+    <div class="note-card">
+      <button class="del-btn" onclick="deleteNote(${n.id})" style="background:rgba(0,0,0,.06)">✕</button>
+      <div class="note-card-text">${escHtml(n.text)}</div>
+      <div class="note-card-time">${fmtDate(n.ts)}</div>
+    </div>`).join('');
+}
+renderNotes();
+
+// ─── Budget ───────────────────────────────────────────────────────────
+const cats = {
+  expense: ['🍔 餐飲','🚗 交通','🛍 購物','🏠 住房','🏥 醫療','🎮 娛樂','📚 教育','💸 其他'],
+  income:  ['💼 薪資','🏦 投資','🎁 禮金','💡 副業','💰 其他收入']
+};
+function updateCatSelect() {
+  const type=document.getElementById('budgetType').value;
+  const sel=document.getElementById('budgetCat');
+  sel.innerHTML=cats[type].map(c=>`<option>${c}</option>`).join('');
+}
+document.getElementById('budgetType').addEventListener('change',updateCatSelect);
+updateCatSelect();
+
+function addBudget() {
+  const type=document.getElementById('budgetType').value;
+  const cat=document.getElementById('budgetCat').value;
+  const amount=parseFloat(document.getElementById('budgetAmount').value);
+  const desc=document.getElementById('budgetDesc').value.trim();
+  if(!amount||amount<=0) { document.getElementById('budgetAmount').focus(); return; }
+  const records=S.get('budget',[]);
+  records.unshift({id:Date.now(),type,cat,amount,desc,ts:Date.now(),month:monthKey()});
+  S.set('budget',records);
+  document.getElementById('budgetAmount').value='';
+  document.getElementById('budgetDesc').value='';
+  renderBudget();
+  refreshDashboard();
+}
+function deleteBudget(id) {
+  const records=S.get('budget',[]).filter(x=>x.id!==id);
+  S.set('budget',records);
+  renderBudget();
+  refreshDashboard();
+}
+function renderBudget() {
+  const mk=monthKey();
+  const records=S.get('budget',[]).filter(r=>r.month===mk);
+  let income=0,expense=0;
+  records.forEach(r=>{ if(r.type==='income') income+=r.amount; else expense+=r.amount; });
+  const balance=income-expense;
+  document.getElementById('budgetIncome').textContent=`$${income.toLocaleString()}`;
+  document.getElementById('budgetExpense').textContent=`$${expense.toLocaleString()}`;
+  document.getElementById('budgetBalance').textContent=`$${balance.toLocaleString()}`;
+  const list=document.getElementById('budgetList');
+  if(!records.length){ list.innerHTML='<div class="empty"><div class="empty-icon">💰</div>尚無記帳記錄</div>'; return; }
+  list.innerHTML=records.map(r=>`
+    <div class="budget-item">
+      <div class="budget-cat-icon">${r.cat.split(' ')[0]}</div>
+      <div class="budget-item-info">
+        <div class="budget-item-desc">${r.desc||r.cat.split(' ').slice(1).join(' ')}</div>
+        <div class="budget-item-date">${r.cat.split(' ').slice(1).join(' ')} · ${fmtDate(r.ts)}</div>
+      </div>
+      <div class="budget-item-amount ${r.type}">${r.type==='income'?'+':'-'}$${r.amount.toLocaleString()}</div>
+      <button class="del-btn" onclick="deleteBudget(${r.id})">✕</button>
+    </div>`).join('');
+}
+renderBudget();
+
+// ─── Dashboard refresh ────────────────────────────────────────────────
+function refreshDashboard() {
+  // Todos
+  const todos=S.get('todos',[]);
+  const done=todos.filter(t=>t.done).length;
+  const total=todos.length;
+  const pct=total?Math.round(done/total*100):0;
+  document.getElementById('stat-todo').textContent=`${pct}%`;
+  document.getElementById('prog-todo').style.width=pct+'%';
+
+  // Habits
+  const habits=S.get('habits',[]);
+  const td=todayKey();
+  const hdone=habits.filter(h=>h.records[td]).length;
+  const htotal=habits.length;
+  const hpct=htotal?Math.round(hdone/htotal*100):0;
+  document.getElementById('stat-habit').textContent=`${hdone}/${htotal}`;
+  document.getElementById('prog-habit').style.width=hpct+'%';
+
+  // Water
+  const wcount=(S.get('water',{}))[td]||0;
+  document.getElementById('stat-water').textContent=wcount;
+  document.getElementById('prog-water').style.width=Math.min(wcount/8*100,100)+'%';
+
+  // Budget
+  const mk=monthKey();
+  const records=S.get('budget',[]).filter(r=>r.month===mk);
+  let income=0,expense=0;
+  records.forEach(r=>{ if(r.type==='income') income+=r.amount; else expense+=r.amount; });
+  const balance=income-expense;
+  document.getElementById('stat-budget').textContent=`$${Math.abs(balance).toLocaleString()}`;
+  document.getElementById('prog-budget').style.width=income?Math.min(Math.max(balance/income*100,0),100)+'%':'0%';
+
+  // Recent todos
+  const recent=todos.filter(t=>!t.done).slice(0,4);
+  const dashTodos=document.getElementById('dash-todos');
+  if(!recent.length){ dashTodos.innerHTML='<div class="empty"><div class="empty-icon">✅</div>全部完成！</div>'; return; }
+  dashTodos.innerHTML=recent.map(t=>`
+    <div class="todo-item">
+      <div class="todo-check${t.done?' done':''}" onclick="toggleTodo(${t.id});refreshDashboard()"></div>
+      <span class="todo-text">${escHtml(t.text)}</span>
+      <span class="todo-tag tag-${t.tag}">${tagLabels[t.tag]||t.tag}</span>
+    </div>`).join('');
+}
+refreshDashboard();
+
+// ─── Escape ───────────────────────────────────────────────────────────
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-#status, #status-splash, #status-progress {
-	position: absolute;
-	left: 0;
-	right: 0;
+// ─── Daily Quotes ─────────────────────────────────────────────────────
+const QUOTES = [
+  {t:'自律是最高形式的自愛。',a:'— 匿名'},
+  {t:'你不需要動力，你需要紀律。',a:'— Jocko Willink'},
+  {t:'每天進步 1%，一年後你會進步 37 倍。',a:'— James Clear'},
+  {t:'勝利者做那些失敗者不想做的事。',a:'— 匿名'},
+  {t:'今天的自律，是明天自由的代價。',a:'— 匿名'},
+  {t:'不要等到覺得準備好才開始，行動本身會讓你準備好。',a:'— 匿名'},
+  {t:'小事做不好，大事更難成。',a:'— 曾國藩'},
+  {t:'先做最難的事，其餘的就很輕鬆了。',a:'— Mark Twain'},
+  {t:'規律的力量在於它不需要思考，只需執行。',a:'— 匿名'},
+  {t:'你的未來由你現在做的事情決定。',a:'— 匿名'},
+  {t:'每一個不曾起舞的日子，都是對生命的辜負。',a:'— 尼采'},
+  {t:'想到不如做到，做到才是得到。',a:'— 匿名'},
+];
+function loadQuote() {
+  const idx = Math.floor(Date.now()/86400000) % QUOTES.length;
+  const q = QUOTES[idx];
+  document.getElementById('quoteText').textContent = `「${q.t}」`;
+  document.getElementById('quoteAuthor').textContent = q.a;
+}
+loadQuote();
+
+// ─── Pomodoro ─────────────────────────────────────────────────────────
+let pomoFocusMin=25, pomoRestMin=5;
+let pomoSeconds=25*60, pomoRunning=false, pomoPhase='focus', pomoTimer=null, pomoSession=0;
+const CIRC = 2*Math.PI*80; // circumference
+
+function setPomoMode(f,r) {
+  pomoReset();
+  pomoFocusMin=f; pomoRestMin=r;
+  pomoSeconds=f*60;
+  pomoPhase='focus';
+  document.getElementById('pomoRing').className='pomo-ring focus';
+  renderPomoTime();
+  ['2525','5010','4515'].forEach(k=>{
+    const el=document.getElementById('pomo-m-'+k);
+    el.style.background='var(--bg)'; el.style.color='var(--text-light)';
+  });
+  document.getElementById(`pomo-m-${f}${r}`).style.background='var(--primary)';
+  document.getElementById(`pomo-m-${f}${r}`).style.color='white';
 }
 
-#status, #status-splash {
-	top: 0;
-	bottom: 0;
+function pomoStart() {
+  if(pomoRunning) {
+    pomoRunning=false; clearInterval(pomoTimer);
+    document.getElementById('pomoBtnStart').textContent='▶ 繼續';
+    document.getElementById('pomoBtnStart').className='pomo-btn start';
+    return;
+  }
+  pomoRunning=true;
+  document.getElementById('pomoBtnStart').textContent='⏸ 暫停';
+  document.getElementById('pomoBtnStart').className='pomo-btn pause';
+  pomoTimer=setInterval(()=>{
+    pomoSeconds--;
+    renderPomoTime();
+    if(pomoSeconds<=0) {
+      clearInterval(pomoTimer); pomoRunning=false;
+      if(pomoPhase==='focus') {
+        pomoSession++;
+        pomoPhase='rest';
+        pomoSeconds=pomoRestMin*60;
+        document.getElementById('pomoRing').className='pomo-ring rest';
+        document.getElementById('pomoBtnStart').textContent='▶ 開始休息';
+        document.getElementById('pomoBtnStart').className='pomo-btn start';
+        try{ new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAA...').play(); }catch(e){}
+        renderPomoSessions();
+        alert(`✅ 專注完成！休息 ${pomoRestMin} 分鐘 🎉`);
+      } else {
+        pomoPhase='focus';
+        pomoSeconds=pomoFocusMin*60;
+        document.getElementById('pomoRing').className='pomo-ring focus';
+        document.getElementById('pomoBtnStart').textContent='▶ 開始專注';
+        document.getElementById('pomoBtnStart').className='pomo-btn start';
+        alert(`😌 休息結束！再來一個番茄鐘？`);
+      }
+      renderPomoTime();
+    }
+  },1000);
 }
 
-#status {
-	background-color: #242424;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	visibility: hidden;
+function pomoReset() {
+  clearInterval(pomoTimer); pomoRunning=false;
+  pomoSeconds=pomoFocusMin*60; pomoPhase='focus';
+  document.getElementById('pomoRing').className='pomo-ring focus';
+  document.getElementById('pomoBtnStart').textContent='▶ 開始';
+  document.getElementById('pomoBtnStart').className='pomo-btn start';
+  renderPomoTime();
 }
 
-#status-splash {
-	max-height: 100%;
-	max-width: 100%;
-	margin: auto;
+function renderPomoTime() {
+  const m=Math.floor(pomoSeconds/60), s=pomoSeconds%60;
+  document.getElementById('pomoTime').textContent=
+    `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const total=(pomoPhase==='focus'?pomoFocusMin:pomoRestMin)*60;
+  const pct=pomoSeconds/total;
+  document.getElementById('pomoArc').style.strokeDashoffset=CIRC*pct;
+  document.getElementById('pomoLabel').textContent=pomoPhase==='focus'?'專注中 🍅':'休息中 😌';
 }
 
-#status-splash.show-image--false {
-	display: none;
+function renderPomoSessions() {
+  const dots=document.getElementById('pomoSessions');
+  dots.innerHTML=Array.from({length:Math.min(pomoSession+1,8)},(_,i)=>
+    `<div class="pomo-dot${i<pomoSession?' done':''}"></div>`
+  ).join('');
+}
+renderPomoTime(); renderPomoSessions();
+
+// ─── Challenge Tracker ────────────────────────────────────────────────
+function addChallenge() {
+  const name=document.getElementById('chalName').value.trim();
+  const days=parseInt(document.getElementById('chalDays').value);
+  if(!name) return;
+  const chals=S.get('challenges',[]);
+  chals.push({id:Date.now(),name,days,records:{},start:todayKey()});
+  S.set('challenges',chals);
+  document.getElementById('chalName').value='';
+  renderChallenges();
+}
+document.getElementById('chalName').addEventListener('keydown',e=>{ if(e.key==='Enter') addChallenge(); });
+
+function toggleChalDay(id) {
+  const chals=S.get('challenges',[]);
+  const c=chals.find(x=>x.id===id);
+  if(!c) return;
+  const td=todayKey();
+  c.records[td]=!c.records[td];
+  S.set('challenges',chals);
+  renderChallenges();
 }
 
-#status-splash.fullsize--true {
-	height: 100%;
-	width: 100%;
-	object-fit: contain;
+function deleteChallenge(id) {
+  S.set('challenges',S.get('challenges',[]).filter(x=>x.id!==id));
+  renderChallenges();
 }
 
-#status-splash.use-filter--false {
-	image-rendering: pixelated;
+function renderChallenges() {
+  const chals=S.get('challenges',[]);
+  const list=document.getElementById('challengeList');
+  if(!chals.length){ list.innerHTML='<div class="empty"><div class="empty-icon">🏆</div>新增你的挑戰</div>'; return; }
+  const td=todayKey();
+  list.innerHTML=chals.map(c=>{
+    const done=Object.values(c.records).filter(Boolean).length;
+    const pct=Math.round(done/c.days*100);
+    // build grid: start date + c.days cells
+    const startMs=new Date(c.start).getTime();
+    const cells=Array.from({length:c.days},(_,i)=>{
+      const d=new Date(startMs+i*86400000);
+      const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      const isToday=k===td;
+      return `<div class="challenge-cell${c.records[k]?' done':''}${isToday?' today':''}" onclick="toggleChalDay(${c.id})" title="${k}"></div>`;
+    }).join('');
+    return `<div class="challenge-item">
+      <div class="challenge-header">
+        <div class="challenge-emoji">🏆</div>
+        <div class="challenge-info">
+          <div class="challenge-name">${escHtml(c.name)}</div>
+          <div class="challenge-sub">${done}/${c.days} 天完成（${pct}%）· 從 ${c.start} 開始</div>
+        </div>
+        <button class="del-btn" onclick="deleteChallenge(${c.id})">✕</button>
+      </div>
+      <div class="progress-bar" style="margin-bottom:8px"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="challenge-grid">${cells}</div>
+    </div>`;
+  }).join('');
+}
+renderChallenges();
+
+// ─── Evening Reflection ───────────────────────────────────────────────
+const REFLECT_QS = ['今天完成了什麼值得肯定的事？','今天有什麼拖延或沒做到的？','明天最重要的一件事是什麼？'];
+
+function saveReflect() {
+  const a1=document.getElementById('ref1').value.trim();
+  const a2=document.getElementById('ref2').value.trim();
+  const a3=document.getElementById('ref3').value.trim();
+  if(!a1&&!a2&&!a3) return;
+  const records=S.get('reflects',[]);
+  records.unshift({id:Date.now(),date:todayKey(),a:[a1,a2,a3]});
+  S.set('reflects',records);
+  document.getElementById('ref1').value='';
+  document.getElementById('ref2').value='';
+  document.getElementById('ref3').value='';
+  renderReflects();
+  alert('✅ 今日反思已儲存！');
 }
 
-#status-progress, #status-notice {
-	display: none;
+function deleteReflect(id) {
+  S.set('reflects',S.get('reflects',[]).filter(x=>x.id!==id));
+  renderReflects();
 }
 
-#status-progress {
-	bottom: 10%;
-	width: 50%;
-	margin: 0 auto;
+function renderReflects() {
+  const records=S.get('reflects',[]);
+  const el=document.getElementById('reflectHistory');
+  if(!records.length){ el.innerHTML=''; return; }
+  el.innerHTML='<p class="section-label">過往反思</p>'+records.slice(0,10).map(r=>`
+    <div class="reflect-saved">
+      <div class="flex-between">
+        <div class="reflect-saved-date">${r.date}</div>
+        <button class="del-btn" onclick="deleteReflect(${r.id})">✕</button>
+      </div>
+      ${r.a.map((a,i)=>a?`<div class="reflect-saved-q">${REFLECT_QS[i]}</div><div class="reflect-saved-a">${escHtml(a)}</div>`:'').join('')}
+    </div>`).join('');
 }
-
-#status-notice {
-	background-color: #5b3943;
-	border-radius: 0.5rem;
-	border: 1px solid #9b3943;
-	color: #e0e0e0;
-	font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
-	line-height: 1.3;
-	margin: 0 2rem;
-	overflow: hidden;
-	padding: 1rem;
-	text-align: center;
-	z-index: 1;
-}
-		</style>
-		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
-<link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
-
-	</head>
-	<body>
-		<canvas id="canvas">
-			Your browser does not support the canvas tag.
-		</canvas>
-
-		<noscript>
-			Your browser does not support JavaScript.
-		</noscript>
-
-		<div id="status">
-			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png" alt="">
-			<progress id="status-progress"></progress>
-			<div id="status-notice"></div>
-		</div>
-
-		<script src="index.js"></script>
-		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":179037664,"index.wasm":35739700},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
-const GODOT_THREADS_ENABLED = false;
-const engine = new Engine(GODOT_CONFIG);
-
-(function () {
-	const statusOverlay = document.getElementById('status');
-	const statusProgress = document.getElementById('status-progress');
-	const statusNotice = document.getElementById('status-notice');
-
-	let initializing = true;
-	let statusMode = '';
-
-	function setStatusMode(mode) {
-		if (statusMode === mode || !initializing) {
-			return;
-		}
-		if (mode === 'hidden') {
-			statusOverlay.remove();
-			initializing = false;
-			return;
-		}
-		statusOverlay.style.visibility = 'visible';
-		statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
-		statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
-		statusMode = mode;
-	}
-
-	function setStatusNotice(text) {
-		while (statusNotice.lastChild) {
-			statusNotice.removeChild(statusNotice.lastChild);
-		}
-		const lines = text.split('\n');
-		lines.forEach((line) => {
-			statusNotice.appendChild(document.createTextNode(line));
-			statusNotice.appendChild(document.createElement('br'));
-		});
-	}
-
-	function displayFailureNotice(err) {
-		console.error(err);
-		if (err instanceof Error) {
-			setStatusNotice(err.message);
-		} else if (typeof err === 'string') {
-			setStatusNotice(err);
-		} else {
-			setStatusNotice('An unknown error occurred.');
-		}
-		setStatusMode('notice');
-		initializing = false;
-	}
-
-	const missing = Engine.getMissingFeatures({
-		threads: GODOT_THREADS_ENABLED,
-	});
-
-	if (missing.length !== 0) {
-		if (GODOT_CONFIG['serviceWorker'] && GODOT_CONFIG['ensureCrossOriginIsolationHeaders'] && 'serviceWorker' in navigator) {
-			let serviceWorkerRegistrationPromise;
-			try {
-				serviceWorkerRegistrationPromise = navigator.serviceWorker.getRegistration();
-			} catch (err) {
-				serviceWorkerRegistrationPromise = Promise.reject(new Error('Service worker registration failed.'));
-			}
-			// There's a chance that installing the service worker would fix the issue
-			Promise.race([
-				serviceWorkerRegistrationPromise.then((registration) => {
-					if (registration != null) {
-						return Promise.reject(new Error('Service worker already exists.'));
-					}
-					return registration;
-				}).then(() => engine.installServiceWorker()),
-				// For some reason, `getRegistration()` can stall
-				new Promise((resolve) => {
-					setTimeout(() => resolve(), 2000);
-				}),
-			]).then(() => {
-				// Reload if there was no error.
-				window.location.reload();
-			}).catch((err) => {
-				console.error('Error while registering service worker:', err);
-			});
-		} else {
-			// Display the message as usual
-			const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
-			displayFailureNotice(missingMsg + missing.join('\n'));
-		}
-	} else {
-		setStatusMode('progress');
-		engine.startGame({
-			'onProgress': function (current, total) {
-				if (current > 0 && total > 0) {
-					statusProgress.value = current;
-					statusProgress.max = total;
-				} else {
-					statusProgress.removeAttribute('value');
-					statusProgress.removeAttribute('max');
-				}
-			},
-		}).then(() => {
-			setStatusMode('hidden');
-		}, displayFailureNotice);
-	}
-}());
-		</script>
-	</body>
+renderReflects();
+</script>
+</body>
 </html>
-
