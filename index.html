@@ -6,6 +6,9 @@
   <meta name="theme-color" content="#667eea">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="生活助手">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.svg">
   <title>我的生活助手</title>
   <style>
     :root {
@@ -611,6 +614,11 @@
 </nav>
 
 <script>
+// ─── Service Worker ───────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+
 // ─── Storage helpers ───────────────────────────────────────────────────
 const S = {
   get: (k, def) => { try { const v=localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch(e){ return def; } },
