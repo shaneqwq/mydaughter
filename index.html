@@ -270,6 +270,70 @@
       background: var(--bg); border-radius: 20px;
       padding: 4px 10px; font-size: .78rem; font-weight: 600; color: var(--text-light);
     }
+    /* ── Pomodoro ── */
+    .pomo-ring {
+      position: relative; width: 180px; height: 180px;
+      margin: 0 auto 16px;
+    }
+    .pomo-ring svg { transform: rotate(-90deg); }
+    .pomo-ring-bg { fill: none; stroke: var(--border); stroke-width: 10; }
+    .pomo-ring-fill { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset .5s; }
+    .pomo-ring.focus .pomo-ring-fill { stroke: var(--danger); }
+    .pomo-ring.rest  .pomo-ring-fill { stroke: var(--success); }
+    .pomo-center {
+      position: absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      text-align: center;
+    }
+    .pomo-time { font-size: 2.4rem; font-weight: 900; letter-spacing: -1px; }
+    .pomo-label { font-size: .75rem; font-weight: 700; color: var(--text-light); margin-top: 2px; }
+    .pomo-btns { display: flex; gap: 10px; justify-content: center; }
+    .pomo-btn {
+      border: none; border-radius: 50px; padding: 12px 28px;
+      font-size: .95rem; font-weight: 700; cursor: pointer; transition: opacity .2s, transform .1s;
+    }
+    .pomo-btn:active { transform: scale(.95); }
+    .pomo-btn.start { background: var(--danger); color: white; }
+    .pomo-btn.pause { background: var(--warning); color: white; }
+    .pomo-btn.reset { background: var(--bg); color: var(--text-light); }
+    .pomo-sessions { display: flex; gap: 6px; justify-content: center; margin-top: 12px; }
+    .pomo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
+    .pomo-dot.done { background: var(--danger); }
+    /* ── Challenge ── */
+    .challenge-item { padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .challenge-item:last-child { border-bottom: none; }
+    .challenge-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .challenge-emoji { font-size: 1.4rem; }
+    .challenge-info { flex: 1; }
+    .challenge-name { font-size: .93rem; font-weight: 700; }
+    .challenge-sub { font-size: .76rem; color: var(--text-light); margin-top: 2px; }
+    .challenge-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+    .challenge-cell {
+      width: 22px; height: 22px; border-radius: 5px;
+      background: var(--border); cursor: pointer; transition: background .15s;
+    }
+    .challenge-cell.done { background: linear-gradient(135deg,var(--primary),var(--accent)); }
+    .challenge-cell.today { outline: 2px solid var(--primary); outline-offset: 1px; }
+    /* ── Reflect ── */
+    .reflect-q { font-size: .88rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .reflect-input {
+      width: 100%; border: 2px solid var(--border); border-radius: var(--radius-sm);
+      padding: 10px 12px; font-size: .88rem; font-family: inherit;
+      background: var(--bg); outline: none; resize: none; min-height: 60px; line-height: 1.5;
+      transition: border-color .2s;
+    }
+    .reflect-input:focus { border-color: var(--primary); }
+    .reflect-block { margin-bottom: 14px; }
+    .reflect-saved { background: #f0fff4; border-left: 4px solid var(--success); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 8px; }
+    .reflect-saved-date { font-size: .72rem; color: var(--text-light); margin-bottom: 6px; font-weight: 700; }
+    .reflect-saved-q { font-size: .78rem; color: var(--text-light); }
+    .reflect-saved-a { font-size: .88rem; margin-top: 2px; white-space: pre-wrap; }
+    /* ── Quote ── */
+    .quote-box {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border-radius: var(--radius); padding: 20px; color: white; text-align: center; margin-bottom: 14px;
+    }
+    .quote-text { font-size: 1rem; font-weight: 600; line-height: 1.6; }
+    .quote-author { font-size: .8rem; opacity: .75; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -442,6 +506,80 @@
     </div>
   </div>
 
+  <!-- Self-Discipline -->
+  <div class="page" id="page-discipline">
+
+    <!-- Daily Quote -->
+    <div class="quote-box" id="quoteBox">
+      <div class="quote-text" id="quoteText"></div>
+      <div class="quote-author" id="quoteAuthor"></div>
+    </div>
+
+    <!-- Pomodoro -->
+    <p class="section-label">🍅 番茄鐘專注計時</p>
+    <div class="card">
+      <div class="pomo-ring focus" id="pomoRing">
+        <svg width="180" height="180" viewBox="0 0 180 180">
+          <circle class="pomo-ring-bg" cx="90" cy="90" r="80"/>
+          <circle class="pomo-ring-fill" id="pomoArc" cx="90" cy="90" r="80"
+            stroke-dasharray="502.65" stroke-dashoffset="0"/>
+        </svg>
+        <div class="pomo-center">
+          <div class="pomo-time" id="pomoTime">25:00</div>
+          <div class="pomo-label" id="pomoLabel">準備專注</div>
+        </div>
+      </div>
+      <div class="pomo-btns">
+        <button class="pomo-btn start" id="pomoBtnStart" onclick="pomoStart()">▶ 開始</button>
+        <button class="pomo-btn reset" onclick="pomoReset()">↺ 重置</button>
+      </div>
+      <div class="pomo-sessions" id="pomoSessions"></div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:14px">
+        <button onclick="setPomoMode(25,5)" class="chip" id="pomo-m-2525" style="cursor:pointer;background:var(--primary);color:white">25/5</button>
+        <button onclick="setPomoMode(50,10)" class="chip" id="pomo-m-5010" style="cursor:pointer">50/10</button>
+        <button onclick="setPomoMode(45,15)" class="chip" id="pomo-m-4515" style="cursor:pointer">45/15</button>
+      </div>
+    </div>
+
+    <!-- Challenge Tracker -->
+    <p class="section-label">🏆 N天挑戰打卡</p>
+    <div class="card">
+      <div class="add-form">
+        <input type="text" id="chalName" placeholder="挑戰名稱（如：每天跑步）" maxlength="20">
+        <select id="chalDays" style="flex:0 0 68px;border:2px solid var(--border);border-radius:var(--radius-sm);padding:10px;background:var(--bg);outline:none;font-size:.85rem">
+          <option value="21">21天</option>
+          <option value="30">30天</option>
+          <option value="66">66天</option>
+          <option value="100">100天</option>
+        </select>
+        <button class="add-btn" onclick="addChallenge()">＋</button>
+      </div>
+    </div>
+    <div class="card" id="challengeList">
+      <div class="empty"><div class="empty-icon">🏆</div>新增你的挑戰</div>
+    </div>
+
+    <!-- Evening Reflection -->
+    <p class="section-label">🌙 今日反思復盤</p>
+    <div class="card">
+      <div class="reflect-block">
+        <div class="reflect-q">✅ 今天完成了什麼值得肯定的事？</div>
+        <textarea class="reflect-input" id="ref1" placeholder="寫下來…" rows="2"></textarea>
+      </div>
+      <div class="reflect-block">
+        <div class="reflect-q">⚡ 今天有什麼拖延或沒做到的？原因是？</div>
+        <textarea class="reflect-input" id="ref2" placeholder="寫下來…" rows="2"></textarea>
+      </div>
+      <div class="reflect-block">
+        <div class="reflect-q">🎯 明天最重要的一件事是什麼？</div>
+        <textarea class="reflect-input" id="ref3" placeholder="寫下來…" rows="2"></textarea>
+      </div>
+      <button class="add-btn" style="width:100%;border-radius:10px;height:44px;font-size:.95rem;font-weight:700" onclick="saveReflect()">儲存今日反思</button>
+    </div>
+    <div id="reflectHistory"></div>
+
+  </div>
+
 </div><!-- end pages wrapper -->
 
 <!-- Bottom nav -->
@@ -465,6 +603,10 @@
   <button class="nav-btn" onclick="showPage('budget',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 1 0 7H6"/></svg>
     記帳
+  </button>
+  <button class="nav-btn" onclick="showPage('discipline',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    自律
   </button>
 </nav>
 
@@ -825,6 +967,212 @@ refreshDashboard();
 function escHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+// ─── Daily Quotes ─────────────────────────────────────────────────────
+const QUOTES = [
+  {t:'自律是最高形式的自愛。',a:'— 匿名'},
+  {t:'你不需要動力，你需要紀律。',a:'— Jocko Willink'},
+  {t:'每天進步 1%，一年後你會進步 37 倍。',a:'— James Clear'},
+  {t:'勝利者做那些失敗者不想做的事。',a:'— 匿名'},
+  {t:'今天的自律，是明天自由的代價。',a:'— 匿名'},
+  {t:'不要等到覺得準備好才開始，行動本身會讓你準備好。',a:'— 匿名'},
+  {t:'小事做不好，大事更難成。',a:'— 曾國藩'},
+  {t:'先做最難的事，其餘的就很輕鬆了。',a:'— Mark Twain'},
+  {t:'規律的力量在於它不需要思考，只需執行。',a:'— 匿名'},
+  {t:'你的未來由你現在做的事情決定。',a:'— 匿名'},
+  {t:'每一個不曾起舞的日子，都是對生命的辜負。',a:'— 尼采'},
+  {t:'想到不如做到，做到才是得到。',a:'— 匿名'},
+];
+function loadQuote() {
+  const idx = Math.floor(Date.now()/86400000) % QUOTES.length;
+  const q = QUOTES[idx];
+  document.getElementById('quoteText').textContent = `「${q.t}」`;
+  document.getElementById('quoteAuthor').textContent = q.a;
+}
+loadQuote();
+
+// ─── Pomodoro ─────────────────────────────────────────────────────────
+let pomoFocusMin=25, pomoRestMin=5;
+let pomoSeconds=25*60, pomoRunning=false, pomoPhase='focus', pomoTimer=null, pomoSession=0;
+const CIRC = 2*Math.PI*80; // circumference
+
+function setPomoMode(f,r) {
+  pomoReset();
+  pomoFocusMin=f; pomoRestMin=r;
+  pomoSeconds=f*60;
+  pomoPhase='focus';
+  document.getElementById('pomoRing').className='pomo-ring focus';
+  renderPomoTime();
+  ['2525','5010','4515'].forEach(k=>{
+    const el=document.getElementById('pomo-m-'+k);
+    el.style.background='var(--bg)'; el.style.color='var(--text-light)';
+  });
+  document.getElementById(`pomo-m-${f}${r}`).style.background='var(--primary)';
+  document.getElementById(`pomo-m-${f}${r}`).style.color='white';
+}
+
+function pomoStart() {
+  if(pomoRunning) {
+    pomoRunning=false; clearInterval(pomoTimer);
+    document.getElementById('pomoBtnStart').textContent='▶ 繼續';
+    document.getElementById('pomoBtnStart').className='pomo-btn start';
+    return;
+  }
+  pomoRunning=true;
+  document.getElementById('pomoBtnStart').textContent='⏸ 暫停';
+  document.getElementById('pomoBtnStart').className='pomo-btn pause';
+  pomoTimer=setInterval(()=>{
+    pomoSeconds--;
+    renderPomoTime();
+    if(pomoSeconds<=0) {
+      clearInterval(pomoTimer); pomoRunning=false;
+      if(pomoPhase==='focus') {
+        pomoSession++;
+        pomoPhase='rest';
+        pomoSeconds=pomoRestMin*60;
+        document.getElementById('pomoRing').className='pomo-ring rest';
+        document.getElementById('pomoBtnStart').textContent='▶ 開始休息';
+        document.getElementById('pomoBtnStart').className='pomo-btn start';
+        try{ new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAA...').play(); }catch(e){}
+        renderPomoSessions();
+        alert(`✅ 專注完成！休息 ${pomoRestMin} 分鐘 🎉`);
+      } else {
+        pomoPhase='focus';
+        pomoSeconds=pomoFocusMin*60;
+        document.getElementById('pomoRing').className='pomo-ring focus';
+        document.getElementById('pomoBtnStart').textContent='▶ 開始專注';
+        document.getElementById('pomoBtnStart').className='pomo-btn start';
+        alert(`😌 休息結束！再來一個番茄鐘？`);
+      }
+      renderPomoTime();
+    }
+  },1000);
+}
+
+function pomoReset() {
+  clearInterval(pomoTimer); pomoRunning=false;
+  pomoSeconds=pomoFocusMin*60; pomoPhase='focus';
+  document.getElementById('pomoRing').className='pomo-ring focus';
+  document.getElementById('pomoBtnStart').textContent='▶ 開始';
+  document.getElementById('pomoBtnStart').className='pomo-btn start';
+  renderPomoTime();
+}
+
+function renderPomoTime() {
+  const m=Math.floor(pomoSeconds/60), s=pomoSeconds%60;
+  document.getElementById('pomoTime').textContent=
+    `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const total=(pomoPhase==='focus'?pomoFocusMin:pomoRestMin)*60;
+  const pct=pomoSeconds/total;
+  document.getElementById('pomoArc').style.strokeDashoffset=CIRC*pct;
+  document.getElementById('pomoLabel').textContent=pomoPhase==='focus'?'專注中 🍅':'休息中 😌';
+}
+
+function renderPomoSessions() {
+  const dots=document.getElementById('pomoSessions');
+  dots.innerHTML=Array.from({length:Math.min(pomoSession+1,8)},(_,i)=>
+    `<div class="pomo-dot${i<pomoSession?' done':''}"></div>`
+  ).join('');
+}
+renderPomoTime(); renderPomoSessions();
+
+// ─── Challenge Tracker ────────────────────────────────────────────────
+function addChallenge() {
+  const name=document.getElementById('chalName').value.trim();
+  const days=parseInt(document.getElementById('chalDays').value);
+  if(!name) return;
+  const chals=S.get('challenges',[]);
+  chals.push({id:Date.now(),name,days,records:{},start:todayKey()});
+  S.set('challenges',chals);
+  document.getElementById('chalName').value='';
+  renderChallenges();
+}
+document.getElementById('chalName').addEventListener('keydown',e=>{ if(e.key==='Enter') addChallenge(); });
+
+function toggleChalDay(id) {
+  const chals=S.get('challenges',[]);
+  const c=chals.find(x=>x.id===id);
+  if(!c) return;
+  const td=todayKey();
+  c.records[td]=!c.records[td];
+  S.set('challenges',chals);
+  renderChallenges();
+}
+
+function deleteChallenge(id) {
+  S.set('challenges',S.get('challenges',[]).filter(x=>x.id!==id));
+  renderChallenges();
+}
+
+function renderChallenges() {
+  const chals=S.get('challenges',[]);
+  const list=document.getElementById('challengeList');
+  if(!chals.length){ list.innerHTML='<div class="empty"><div class="empty-icon">🏆</div>新增你的挑戰</div>'; return; }
+  const td=todayKey();
+  list.innerHTML=chals.map(c=>{
+    const done=Object.values(c.records).filter(Boolean).length;
+    const pct=Math.round(done/c.days*100);
+    // build grid: start date + c.days cells
+    const startMs=new Date(c.start).getTime();
+    const cells=Array.from({length:c.days},(_,i)=>{
+      const d=new Date(startMs+i*86400000);
+      const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      const isToday=k===td;
+      return `<div class="challenge-cell${c.records[k]?' done':''}${isToday?' today':''}" onclick="toggleChalDay(${c.id})" title="${k}"></div>`;
+    }).join('');
+    return `<div class="challenge-item">
+      <div class="challenge-header">
+        <div class="challenge-emoji">🏆</div>
+        <div class="challenge-info">
+          <div class="challenge-name">${escHtml(c.name)}</div>
+          <div class="challenge-sub">${done}/${c.days} 天完成（${pct}%）· 從 ${c.start} 開始</div>
+        </div>
+        <button class="del-btn" onclick="deleteChallenge(${c.id})">✕</button>
+      </div>
+      <div class="progress-bar" style="margin-bottom:8px"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="challenge-grid">${cells}</div>
+    </div>`;
+  }).join('');
+}
+renderChallenges();
+
+// ─── Evening Reflection ───────────────────────────────────────────────
+const REFLECT_QS = ['今天完成了什麼值得肯定的事？','今天有什麼拖延或沒做到的？','明天最重要的一件事是什麼？'];
+
+function saveReflect() {
+  const a1=document.getElementById('ref1').value.trim();
+  const a2=document.getElementById('ref2').value.trim();
+  const a3=document.getElementById('ref3').value.trim();
+  if(!a1&&!a2&&!a3) return;
+  const records=S.get('reflects',[]);
+  records.unshift({id:Date.now(),date:todayKey(),a:[a1,a2,a3]});
+  S.set('reflects',records);
+  document.getElementById('ref1').value='';
+  document.getElementById('ref2').value='';
+  document.getElementById('ref3').value='';
+  renderReflects();
+  alert('✅ 今日反思已儲存！');
+}
+
+function deleteReflect(id) {
+  S.set('reflects',S.get('reflects',[]).filter(x=>x.id!==id));
+  renderReflects();
+}
+
+function renderReflects() {
+  const records=S.get('reflects',[]);
+  const el=document.getElementById('reflectHistory');
+  if(!records.length){ el.innerHTML=''; return; }
+  el.innerHTML='<p class="section-label">過往反思</p>'+records.slice(0,10).map(r=>`
+    <div class="reflect-saved">
+      <div class="flex-between">
+        <div class="reflect-saved-date">${r.date}</div>
+        <button class="del-btn" onclick="deleteReflect(${r.id})">✕</button>
+      </div>
+      ${r.a.map((a,i)=>a?`<div class="reflect-saved-q">${REFLECT_QS[i]}</div><div class="reflect-saved-a">${escHtml(a)}</div>`:'').join('')}
+    </div>`).join('');
+}
+renderReflects();
 </script>
 </body>
 </html>
