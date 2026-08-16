@@ -3,340 +3,523 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#667eea">
+  <meta name="theme-color" content="#f2f3fa">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="生活助手">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon.svg">
   <title>我的生活助手</title>
   <style>
     :root {
-      --primary: #667eea;
-      --primary-dark: #5a6fd6;
-      --secondary: #764ba2;
-      --accent: #f093fb;
-      --success: #48bb78;
-      --warning: #ed8936;
-      --danger: #fc5c7d;
-      --bg: #f0f2f5;
-      --card: #ffffff;
-      --text: #2d3748;
-      --text-light: #718096;
-      --border: #e2e8f0;
-      --shadow: 0 4px 20px rgba(0,0,0,.08);
-      --radius: 16px;
-      --radius-sm: 10px;
+      --bg: #f2f3fa;
+      --text: #191926;
+      --muted: #55556e;
+      --subtle: #7c7c95;
+      --faint: #a6a6bd;
+
+      /* 玻璃表面（淺色） */
+      --glass: rgba(255,255,255,.62);
+      --glass-2: rgba(255,255,255,.78);
+      --glass-3: rgba(255,255,255,.92);
+      --line: rgba(255,255,255,.75);
+      --divider: rgba(25,25,38,.07);
+      --gloss: inset 0 1px 0 rgba(255,255,255,.95);
+      --lift: 0 8px 28px rgba(80,84,160,.13);
+      --lift-sm: 0 2px 10px rgba(80,84,160,.10);
+      --blur: blur(22px) saturate(180%);
+
+      --primary: #5b5bd6;
+      --primary-deep: #4f46e5;
+      --primary-soft: rgba(99,102,241,.13);
+      --success: #0f9d58;
+      --success-soft: rgba(16,185,129,.14);
+      --warning: #c2740a;
+      --danger: #e0355f;
+      --danger-soft: rgba(224,53,95,.11);
+
+      --radius: 18px;
+      --radius-sm: 12px;
+      --radius-xs: 9px;
+      --ease: cubic-bezier(.4,0,.2,1);
     }
+    html { color-scheme: light; -webkit-text-size-adjust: 100%; }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'PingFang TC', 'Noto Sans TC', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                   'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100dvh;
-      padding-bottom: 80px;
+      padding-bottom: 78px;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.006em;
     }
-    /* ── Header ── */
-    .app-header {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      color: white;
-      padding: 20px 20px 36px;
-      position: relative;
-      overflow: hidden;
-    }
-    .app-header::after {
+    /* 柔和的彩色光暈，讓霧面玻璃有顏色可以折射 */
+    body::before {
       content: '';
-      position: absolute;
-      bottom: -20px; left: 0; right: 0;
-      height: 40px;
-      background: var(--bg);
-      border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+      position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background:
+        radial-gradient(circle 520px at 8%  0%,   rgba(129,140,248,.55), transparent 62%),
+        radial-gradient(circle 460px at 95% 14%,  rgba(244,114,182,.42), transparent 62%),
+        radial-gradient(circle 520px at 85% 58%,  rgba(56,189,248,.38),  transparent 62%),
+        radial-gradient(circle 440px at 2%  74%,  rgba(253,186,116,.34), transparent 62%),
+        radial-gradient(circle 400px at 48% 100%, rgba(167,139,250,.40), transparent 62%);
     }
-    .header-top { display: flex; justify-content: space-between; align-items: center; }
-    .app-title { font-size: 1.3rem; font-weight: 700; letter-spacing: .5px; }
-    .header-date { font-size: .85rem; opacity: .85; margin-top: 4px; }
-    .header-greeting { font-size: 1.6rem; font-weight: 800; margin-top: 10px; }
-    .header-time { font-size: 2.8rem; font-weight: 900; letter-spacing: -1px; line-height: 1; margin-top: 4px; }
+
+    /* ── Header ── */
+    .app-header { padding: 46px 18px 24px; }
+    .header-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .app-title { font-size: .82rem; font-weight: 600; color: var(--muted); }
+    .header-date { font-size: .75rem; color: var(--subtle); margin-top: 3px; font-variant-numeric: tabular-nums; }
+    .header-greeting { font-size: .84rem; color: var(--subtle); margin-top: 22px; }
+    .header-time {
+      font-size: 2.75rem; font-weight: 650; line-height: 1.04;
+      letter-spacing: -0.05em; margin-top: 3px;
+      font-variant-numeric: tabular-nums; color: var(--text);
+    }
+
     /* ── Bottom nav ── */
     .bottom-nav {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      background: var(--card);
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
       display: flex;
-      box-shadow: 0 -4px 20px rgba(0,0,0,.08);
-      z-index: 100;
+      background: rgba(255,255,255,.72);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border-top: 1px solid rgba(255,255,255,.8);
+      box-shadow: 0 -4px 24px rgba(80,84,160,.10);
       padding-bottom: env(safe-area-inset-bottom);
     }
     .nav-btn {
-      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 10px 0 8px;
-      border: none; background: none; cursor: pointer;
-      color: var(--text-light); font-size: .65rem; font-weight: 600;
-      transition: color .2s;
-      gap: 4px;
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 4px;
+      padding: 10px 2px 8px; border: none; background: none; cursor: pointer;
+      color: var(--faint); font-size: .6rem; font-weight: 500; font-family: inherit;
+      transition: color .18s var(--ease);
     }
-    .nav-btn.active { color: var(--primary); }
-    .nav-btn svg { width: 22px; height: 22px; }
+    .nav-btn.active { color: var(--primary-deep); }
+    .nav-btn svg { width: 19px; height: 19px; stroke-width: 1.85; }
+
     /* ── Pages ── */
-    .page { display: none; padding: 0 16px 16px; }
-    .page.active { display: block; }
-    /* ── Cards ── */
+    .page { display: none; padding: 0 14px 22px; }
+    .page.active { display: block; animation: fade .3s var(--ease); }
+    @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+    /* ── Glass card ── */
     .card {
-      background: var(--card);
+      background: var(--glass);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--line);
       border-radius: var(--radius);
-      padding: 18px;
-      margin-bottom: 14px;
-      box-shadow: var(--shadow);
+      box-shadow: var(--lift), var(--gloss);
+      padding: 16px;
+      margin-bottom: 11px;
     }
     .card-title {
-      font-size: 1rem; font-weight: 700;
+      font-size: .89rem; font-weight: 600;
       display: flex; align-items: center; gap: 8px;
       margin-bottom: 14px; color: var(--text);
     }
-    .card-title svg { width: 18px; height: 18px; color: var(--primary); }
+    .card-title svg { width: 15px; height: 15px; color: var(--primary); stroke-width: 2; }
+
     /* ── Section label ── */
-    .section-label {
-      font-size: .8rem; font-weight: 700; color: var(--text-light);
-      text-transform: uppercase; letter-spacing: 1px;
-      margin: 18px 0 8px;
-    }
-    /* ── Dashboard stats ── */
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .section-label { font-size: .75rem; font-weight: 550; color: var(--muted); margin: 20px 4px 9px; }
+
+    /* ── Stats ── */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
     .stat-card {
-      background: var(--card); border-radius: var(--radius-sm);
-      padding: 16px; box-shadow: var(--shadow);
+      background: var(--glass);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--lift), var(--gloss);
+      padding: 15px;
       display: flex; flex-direction: column; gap: 6px;
     }
-    .stat-icon { font-size: 1.6rem; }
-    .stat-value { font-size: 1.8rem; font-weight: 900; color: var(--primary); }
-    .stat-label { font-size: .78rem; color: var(--text-light); font-weight: 600; }
-    /* ── Todo ── */
-    .add-form { display: flex; gap: 8px; margin-bottom: 14px; }
-    .add-form input, .add-form select, .note-input, .budget-input {
-      flex: 1; border: 2px solid var(--border);
-      border-radius: var(--radius-sm); padding: 10px 14px;
-      font-size: .9rem; color: var(--text);
-      background: var(--bg); outline: none;
-      transition: border-color .2s;
+    .stat-icon { font-size: 1.05rem; }
+    .stat-value {
+      font-size: 1.5rem; font-weight: 650; color: var(--text);
+      letter-spacing: -0.035em; font-variant-numeric: tabular-nums;
     }
-    .add-form input:focus, .note-input:focus, .budget-input:focus { border-color: var(--primary); }
+    .stat-label { font-size: .72rem; color: var(--subtle); }
+
+    /* ── Inputs ── */
+    .add-form { display: flex; gap: 8px; margin-bottom: 12px; min-width: 0; }
+    .add-form input, .note-input, .budget-input, .reflect-input, .select {
+      min-width: 0;
+      border: 1px solid rgba(25,25,38,.10);
+      border-radius: var(--radius-sm);
+      padding: 11px 13px;
+      font-size: .875rem; font-family: inherit; color: var(--text);
+      background: rgba(255,255,255,.72);
+      outline: none;
+      transition: border-color .18s var(--ease), box-shadow .18s var(--ease), background .18s var(--ease);
+    }
+    .add-form input { flex: 1; }
+    .add-form input:focus, .note-input:focus, .budget-input:focus,
+    .reflect-input:focus, .select:focus {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(99,102,241,.15);
+    }
+    ::placeholder { color: var(--faint); }
+    .select {
+      -webkit-appearance: none; appearance: none;
+      padding-right: 28px; cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237c7c95' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+    }
+    option { background: #fff; color: var(--text); }
+
     .add-btn {
-      width: 44px; height: 44px; border-radius: 12px;
-      border: none; background: var(--primary); color: white;
-      font-size: 1.4rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; transition: background .2s, transform .1s;
+      width: 43px; height: 43px; border-radius: var(--radius-sm); flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,.9); background: var(--glass-2);
+      color: var(--primary-deep); font-size: 1.25rem; font-family: inherit;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--lift-sm), var(--gloss);
+      transition: background .18s var(--ease), transform .1s var(--ease);
     }
-    .add-btn:active { transform: scale(.93); background: var(--primary-dark); }
+    .add-btn:active { background: #fff; transform: scale(.94); }
+    .btn-full {
+      width: 100%; height: 44px; border-radius: var(--radius-sm);
+      font-size: .88rem; font-weight: 600; font-family: inherit;
+      cursor: pointer; border: none;
+      background: linear-gradient(135deg, var(--primary-deep), #9333ea);
+      color: #fff; box-shadow: 0 6px 18px rgba(79,70,229,.32);
+      transition: opacity .18s var(--ease), transform .1s var(--ease);
+    }
+    .btn-full:active { opacity: .9; transform: scale(.99); }
+
+    /* ── Todo ── */
     .todo-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 12px 0; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 11px;
+      padding: 11px 0; border-bottom: 1px solid var(--divider); min-width: 0;
     }
     .todo-item:last-child { border-bottom: none; }
     .todo-check {
-      width: 22px; height: 22px; border-radius: 50%;
-      border: 2.5px solid var(--border); cursor: pointer;
-      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-      transition: background .2s, border-color .2s;
+      width: 20px; height: 20px; border-radius: 7px; flex-shrink: 0;
+      border: 1.5px solid rgba(25,25,38,.20); cursor: pointer;
+      background: rgba(255,255,255,.6);
+      display: flex; align-items: center; justify-content: center;
+      transition: all .18s var(--ease);
     }
-    .todo-check.done { background: var(--success); border-color: var(--success); }
-    .todo-check.done::after { content: '✓'; color: white; font-size: .75rem; font-weight: 800; }
-    .todo-text { flex: 1; font-size: .92rem; line-height: 1.4; }
-    .todo-text.done { text-decoration: line-through; color: var(--text-light); }
+    .todo-check.done {
+      background: linear-gradient(135deg, var(--primary-deep), #9333ea);
+      border-color: transparent; box-shadow: 0 2px 8px rgba(79,70,229,.35);
+    }
+    .todo-check.done::after { content: '✓'; color: #fff; font-size: .68rem; font-weight: 700; }
+    .todo-text {
+      flex: 1; font-size: .875rem; line-height: 1.45; min-width: 0;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .todo-text.done { color: var(--faint); text-decoration: line-through; }
     .todo-tag {
-      font-size: .7rem; font-weight: 700; padding: 2px 8px;
-      border-radius: 20px; background: var(--bg);
+      font-size: .68rem; font-weight: 600; padding: 3px 9px; flex-shrink: 0;
+      border-radius: 7px; border: none;
     }
-    .tag-work { color: #3182ce; }
-    .tag-life { color: #38a169; }
-    .tag-health { color: #e53e3e; }
+    .tag-work   { color: var(--primary-deep); background: var(--primary-soft); }
+    .tag-life   { color: var(--success);      background: var(--success-soft); }
+    .tag-health { color: var(--danger);       background: var(--danger-soft); }
     .del-btn {
-      width: 28px; height: 28px; border-radius: 8px; border: none;
-      background: var(--bg); color: var(--text-light); cursor: pointer;
-      font-size: 1rem; display: flex; align-items: center; justify-content: center;
-      transition: background .2s;
+      width: 27px; height: 27px; border-radius: var(--radius-xs);
+      border: none; flex-shrink: 0; background: transparent;
+      color: var(--faint); cursor: pointer; font-size: .85rem; font-family: inherit;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .18s var(--ease), color .18s var(--ease);
     }
-    .del-btn:hover { background: #fed7d7; color: var(--danger); }
-    /* ── Habit tracker ── */
+    .del-btn:active { background: var(--danger-soft); color: var(--danger); }
+
+    /* ── Habits ── */
     .habit-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 14px 0; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 11px;
+      padding: 12px 0; border-bottom: 1px solid var(--divider); min-width: 0;
     }
     .habit-item:last-child { border-bottom: none; }
-    .habit-emoji { font-size: 1.5rem; width: 36px; text-align: center; }
-    .habit-info { flex: 1; }
-    .habit-name { font-size: .92rem; font-weight: 600; }
-    .habit-streak { font-size: .78rem; color: var(--text-light); margin-top: 2px; }
-    .habit-dots { display: flex; gap: 4px; }
-    .habit-dot {
-      width: 18px; height: 18px; border-radius: 50%;
-      background: var(--border); cursor: pointer; transition: background .2s;
+    .habit-emoji {
+      font-size: 1.05rem; width: 34px; height: 34px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,.8); border: 1px solid rgba(255,255,255,.9);
+      border-radius: 11px; box-shadow: var(--lift-sm);
     }
-    .habit-dot.done { background: var(--success); }
-    .habit-dot.today-dot { border: 2px solid var(--primary); }
+    .habit-info { flex: 1; min-width: 0; }
+    .habit-name { font-size: .875rem; font-weight: 550; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .habit-streak { font-size: .72rem; color: var(--warning); margin-top: 2px; font-weight: 500; }
+    .habit-dots { display: flex; gap: 3px; margin-top: 7px; }
+    .habit-dot {
+      width: 14px; height: 14px; border-radius: 4px;
+      background: rgba(25,25,38,.09); transition: all .18s var(--ease);
+    }
+    .habit-dot.done { background: #10b981; }
+    .habit-dot.today-dot { outline: 1.5px solid var(--primary); outline-offset: 1.5px; }
     .habit-toggle {
-      width: 40px; height: 24px; border-radius: 12px;
-      background: var(--border); cursor: pointer; position: relative;
-      transition: background .2s; border: none; flex-shrink: 0;
+      width: 39px; height: 23px; border-radius: 12px; flex-shrink: 0;
+      background: rgba(25,25,38,.13); cursor: pointer; position: relative;
+      border: none; transition: all .2s var(--ease);
     }
     .habit-toggle::after {
-      content: ''; position: absolute; top: 3px; left: 3px;
+      content: ''; position: absolute; top: 2.5px; left: 2.5px;
       width: 18px; height: 18px; border-radius: 50%;
-      background: white; transition: transform .2s;
+      background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+      transition: transform .2s var(--ease);
     }
-    .habit-toggle.on { background: var(--success); }
+    .habit-toggle.on { background: #10b981; }
     .habit-toggle.on::after { transform: translateX(16px); }
+
     /* ── Notes ── */
-    .note-input {
-      width: 100%; height: 100px; resize: none;
-      font-family: inherit; line-height: 1.6;
-    }
+    .note-input { width: 100%; height: 90px; resize: none; line-height: 1.6; }
     .note-card {
-      background: linear-gradient(135deg, #fffbe7 0%, #fff8dc 100%);
-      border-radius: var(--radius-sm); padding: 14px;
-      margin-bottom: 10px; position: relative;
-      box-shadow: 0 2px 8px rgba(0,0,0,.06);
-      border-left: 4px solid var(--warning);
+      background: var(--glass);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--line);
+      border-left: 3px solid #f59e0b;
+      border-radius: var(--radius);
+      box-shadow: var(--lift), var(--gloss);
+      padding: 15px; margin-bottom: 10px; position: relative;
     }
-    .note-card-text { font-size: .9rem; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
-    .note-card-time { font-size: .72rem; color: #a0855b; margin-top: 8px; }
-    .note-card .del-btn { position: absolute; top: 10px; right: 10px; }
+    .note-card-text {
+      font-size: .875rem; line-height: 1.65; color: var(--text);
+      white-space: pre-wrap; word-break: break-word; padding-right: 28px;
+    }
+    .note-card-time { font-size: .7rem; color: var(--subtle); margin-top: 10px; }
+    .note-card .del-btn { position: absolute; top: 11px; right: 11px; }
+
     /* ── Budget ── */
-    .budget-summary { display: flex; gap: 10px; margin-bottom: 14px; }
+    .budget-summary { display: flex; gap: 9px; margin-bottom: 11px; }
     .budget-box {
-      flex: 1; border-radius: var(--radius-sm); padding: 14px;
-      text-align: center;
+      flex: 1; border-radius: var(--radius); padding: 14px 10px; text-align: center;
+      background: var(--glass);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--line);
+      box-shadow: var(--lift), var(--gloss);
     }
-    .budget-box.income { background: #e6ffed; }
-    .budget-box.expense { background: #fff0f0; }
-    .budget-box.balance { background: #eff6ff; }
-    .budget-box-label { font-size: .7rem; font-weight: 700; color: var(--text-light); }
-    .budget-box-value { font-size: 1.3rem; font-weight: 900; margin-top: 4px; }
-    .budget-box.income .budget-box-value { color: var(--success); }
+    .budget-box-label { font-size: .68rem; color: var(--subtle); }
+    .budget-box-value {
+      font-size: 1.02rem; font-weight: 650; margin-top: 5px;
+      letter-spacing: -0.03em; font-variant-numeric: tabular-nums;
+    }
+    .budget-box.income  .budget-box-value { color: var(--success); }
     .budget-box.expense .budget-box-value { color: var(--danger); }
-    .budget-box.balance .budget-box-value { color: var(--primary); }
-    .budget-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
-    .budget-row { display: flex; gap: 8px; }
-    .budget-row select { flex: 0 0 90px; border: 2px solid var(--border); border-radius: var(--radius-sm); padding: 10px; font-size: .9rem; background: var(--bg); outline: none; }
-    .budget-row select:focus { border-color: var(--primary); }
+    .budget-box.balance .budget-box-value { color: var(--text); }
+    .budget-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    .budget-row { display: flex; gap: 8px; min-width: 0; }
+    .budget-input { flex: 1; }
     .budget-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 12px 0; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 11px;
+      padding: 11px 0; border-bottom: 1px solid var(--divider); min-width: 0;
     }
     .budget-item:last-child { border-bottom: none; }
-    .budget-cat-icon { font-size: 1.3rem; width: 32px; text-align: center; }
-    .budget-item-info { flex: 1; }
-    .budget-item-desc { font-size: .9rem; font-weight: 600; }
-    .budget-item-date { font-size: .75rem; color: var(--text-light); }
-    .budget-item-amount { font-size: 1rem; font-weight: 800; }
-    .budget-item-amount.income { color: var(--success); }
-    .budget-item-amount.expense { color: var(--danger); }
-    /* ── Progress bar ── */
-    .progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
-    .progress-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width .5s; }
-    /* ── Mood ── */
-    .mood-row { display: flex; gap: 10px; justify-content: center; margin: 10px 0; }
-    .mood-btn {
-      font-size: 1.8rem; background: var(--bg); border: 3px solid transparent;
-      border-radius: 50%; width: 52px; height: 52px;
-      cursor: pointer; transition: border-color .2s, transform .1s;
+    .budget-cat-icon {
+      font-size: .95rem; width: 34px; height: 34px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,.8); border: 1px solid rgba(255,255,255,.9);
+      border-radius: 11px; box-shadow: var(--lift-sm);
     }
-    .mood-btn.selected { border-color: var(--primary); transform: scale(1.15); }
-    .mood-log { font-size: .85rem; color: var(--text-light); text-align: center; margin-top: 6px; min-height: 20px; }
-    /* ── Water tracker ── */
-    .water-row { display: flex; align-items: center; gap: 16px; }
-    .water-cups { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+    .budget-item-info { flex: 1; min-width: 0; }
+    .budget-item-desc { font-size: .865rem; font-weight: 550; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .budget-item-date { font-size: .715rem; color: var(--subtle); margin-top: 1px; }
+    .budget-item-amount {
+      font-size: .875rem; font-weight: 600; flex-shrink: 0;
+      font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
+    }
+    .budget-item-amount.income  { color: var(--success); }
+    .budget-item-amount.expense { color: var(--text); }
+
+    /* ── Progress ── */
+    .progress-bar { height: 5px; background: rgba(25,25,38,.09); border-radius: 99px; overflow: hidden; }
+    .progress-fill {
+      height: 100%; border-radius: 99px;
+      background: linear-gradient(90deg, var(--primary-deep), #a855f7);
+      transition: width .55s var(--ease);
+    }
+
+    /* ── Mood ── */
+    .mood-row { display: flex; gap: 8px; justify-content: space-between; }
+    .mood-btn {
+      flex: 1; font-size: 1.45rem; height: 50px;
+      background: rgba(255,255,255,.7); border: 1px solid rgba(255,255,255,.9);
+      border-radius: var(--radius-sm); cursor: pointer;
+      box-shadow: var(--lift-sm);
+      display: flex; align-items: center; justify-content: center;
+      transition: all .18s var(--ease);
+    }
+    .mood-btn.selected {
+      border-color: var(--primary); background: #fff;
+      box-shadow: 0 0 0 3px rgba(99,102,241,.18), var(--lift-sm);
+    }
+    .mood-log { font-size: .78rem; color: var(--subtle); text-align: center; margin-top: 12px; min-height: 18px; }
+
+    /* ── Water ── */
+    .water-row { display: flex; align-items: center; gap: 12px; }
+    .water-cups { display: flex; gap: 5px; flex-wrap: wrap; flex: 1; }
     .water-cup {
-      font-size: 1.4rem; cursor: pointer;
-      filter: grayscale(1) opacity(.4);
-      transition: filter .2s, transform .1s;
+      font-size: 1.15rem; cursor: pointer;
+      filter: grayscale(1) opacity(.3);
+      transition: filter .18s var(--ease), transform .1s var(--ease);
     }
     .water-cup.filled { filter: none; }
-    .water-cup:active { transform: scale(1.3); }
-    .water-count { font-size: 1.1rem; font-weight: 800; color: var(--primary); white-space: nowrap; }
-    /* ── Empty state ── */
-    .empty { text-align: center; padding: 30px 0; color: var(--text-light); font-size: .9rem; }
-    .empty-icon { font-size: 2.5rem; margin-bottom: 8px; }
-    /* ── Floating badge ── */
-    .badge {
-      display: inline-flex; align-items: center; justify-content: center;
-      background: var(--danger); color: white;
-      border-radius: 50%; width: 16px; height: 16px; font-size: .6rem; font-weight: 800;
-      margin-left: 2px; vertical-align: top;
-    }
-    /* ── Utility ── */
-    .flex-between { display: flex; justify-content: space-between; align-items: center; }
-    .text-sm { font-size: .82rem; color: var(--text-light); }
-    .mt-8 { margin-top: 8px; }
+    .water-cup:active { transform: scale(1.25); }
+    .water-count { font-size: .82rem; font-weight: 600; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+    /* ── Empty ── */
+    .empty { text-align: center; padding: 28px 0; color: var(--subtle); font-size: .84rem; }
+    .empty-icon { font-size: 1.7rem; margin-bottom: 8px; opacity: .5; }
+
+    /* ── Chip ── */
     .chip {
       display: inline-flex; align-items: center; gap: 4px;
-      background: var(--bg); border-radius: 20px;
-      padding: 4px 10px; font-size: .78rem; font-weight: 600; color: var(--text-light);
+      border: 1px solid rgba(25,25,38,.09); border-radius: 99px;
+      padding: 6px 13px; font-size: .78rem; font-weight: 550; font-family: inherit;
+      color: var(--subtle); background: rgba(255,255,255,.6); cursor: pointer;
+      transition: all .18s var(--ease);
     }
+    .chip.active-chip {
+      color: #fff; background: var(--primary-deep);
+      border-color: transparent; box-shadow: 0 3px 10px rgba(79,70,229,.3);
+    }
+
+    /* ── Utility ── */
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .text-sm { font-size: .78rem; color: var(--subtle); }
+    .mt-8 { margin-top: 8px; }
+
     /* ── Pomodoro ── */
-    .pomo-ring {
-      position: relative; width: 180px; height: 180px;
-      margin: 0 auto 16px;
-    }
+    .pomo-ring { position: relative; width: 178px; height: 178px; margin: 4px auto 20px; }
     .pomo-ring svg { transform: rotate(-90deg); }
-    .pomo-ring-bg { fill: none; stroke: var(--border); stroke-width: 10; }
-    .pomo-ring-fill { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset .5s; }
-    .pomo-ring.focus .pomo-ring-fill { stroke: var(--danger); }
-    .pomo-ring.rest  .pomo-ring-fill { stroke: var(--success); }
-    .pomo-center {
-      position: absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-      text-align: center;
+    .pomo-ring-bg { fill: none; stroke: rgba(25,25,38,.08); stroke-width: 9; }
+    .pomo-ring-fill {
+      fill: none; stroke-width: 9; stroke-linecap: round;
+      transition: stroke-dashoffset .4s linear, stroke .3s var(--ease);
     }
-    .pomo-time { font-size: 2.4rem; font-weight: 900; letter-spacing: -1px; }
-    .pomo-label { font-size: .75rem; font-weight: 700; color: var(--text-light); margin-top: 2px; }
-    .pomo-btns { display: flex; gap: 10px; justify-content: center; }
+    .pomo-ring.focus .pomo-ring-fill { stroke: var(--primary-deep); }
+    .pomo-ring.rest  .pomo-ring-fill { stroke: #10b981; }
+    .pomo-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; }
+    .pomo-time {
+      font-size: 2.35rem; font-weight: 650; letter-spacing: -0.045em;
+      color: var(--text); font-variant-numeric: tabular-nums;
+    }
+    .pomo-label { font-size: .74rem; color: var(--subtle); margin-top: 3px; }
+    .pomo-btns { display: flex; gap: 9px; justify-content: center; }
     .pomo-btn {
-      border: none; border-radius: 50px; padding: 12px 28px;
-      font-size: .95rem; font-weight: 700; cursor: pointer; transition: opacity .2s, transform .1s;
+      border-radius: 99px; padding: 11px 24px;
+      font-size: .86rem; font-weight: 600; font-family: inherit;
+      cursor: pointer; border: 1px solid transparent;
+      transition: opacity .18s var(--ease), transform .1s var(--ease);
     }
-    .pomo-btn:active { transform: scale(.95); }
-    .pomo-btn.start { background: var(--danger); color: white; }
-    .pomo-btn.pause { background: var(--warning); color: white; }
-    .pomo-btn.reset { background: var(--bg); color: var(--text-light); }
-    .pomo-sessions { display: flex; gap: 6px; justify-content: center; margin-top: 12px; }
-    .pomo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
-    .pomo-dot.done { background: var(--danger); }
+    .pomo-btn:active { opacity: .88; transform: scale(.97); }
+    .pomo-btn.start {
+      background: linear-gradient(135deg, var(--primary-deep), #9333ea);
+      color: #fff; box-shadow: 0 6px 18px rgba(79,70,229,.32);
+    }
+    .pomo-btn.pause { background: #fff; color: var(--text); border-color: rgba(25,25,38,.10); box-shadow: var(--lift-sm); }
+    .pomo-btn.reset { background: rgba(255,255,255,.6); color: var(--subtle); border-color: rgba(25,25,38,.09); }
+    .pomo-sessions { display: flex; gap: 6px; justify-content: center; align-items: center; margin-top: 15px; }
+    .pomo-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(25,25,38,.14); }
+    .pomo-dot.done { background: var(--primary-deep); }
+
     /* ── Challenge ── */
-    .challenge-item { padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .challenge-item { padding: 14px 0; border-bottom: 1px solid var(--divider); }
     .challenge-item:last-child { border-bottom: none; }
-    .challenge-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-    .challenge-emoji { font-size: 1.4rem; }
-    .challenge-info { flex: 1; }
-    .challenge-name { font-size: .93rem; font-weight: 700; }
-    .challenge-sub { font-size: .76rem; color: var(--text-light); margin-top: 2px; }
-    .challenge-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+    .challenge-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; min-width: 0; }
+    .challenge-emoji { font-size: 1.1rem; flex-shrink: 0; }
+    .challenge-info { flex: 1; min-width: 0; }
+    .challenge-name { font-size: .875rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .challenge-sub { font-size: .715rem; color: var(--subtle); margin-top: 2px; }
+    .challenge-grid { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 11px; }
     .challenge-cell {
-      width: 22px; height: 22px; border-radius: 5px;
-      background: var(--border); cursor: pointer; transition: background .15s;
+      width: 17px; height: 17px; border-radius: 5px;
+      background: rgba(25,25,38,.08); cursor: pointer;
+      transition: all .18s var(--ease);
     }
-    .challenge-cell.done { background: linear-gradient(135deg,var(--primary),var(--accent)); }
-    .challenge-cell.today { outline: 2px solid var(--primary); outline-offset: 1px; }
+    .challenge-cell.done { background: linear-gradient(135deg, var(--primary-deep), #a855f7); }
+    .challenge-cell.today { outline: 1.5px solid var(--primary); outline-offset: 1.5px; }
+
     /* ── Reflect ── */
-    .reflect-q { font-size: .88rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
-    .reflect-input {
-      width: 100%; border: 2px solid var(--border); border-radius: var(--radius-sm);
-      padding: 10px 12px; font-size: .88rem; font-family: inherit;
-      background: var(--bg); outline: none; resize: none; min-height: 60px; line-height: 1.5;
-      transition: border-color .2s;
+    .reflect-block { margin-bottom: 15px; }
+    .reflect-q { font-size: .82rem; font-weight: 550; color: var(--muted); margin-bottom: 8px; }
+    .reflect-input { width: 100%; resize: none; min-height: 58px; line-height: 1.55; }
+    .reflect-saved {
+      background: var(--glass);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--line);
+      border-left: 3px solid #10b981;
+      border-radius: var(--radius);
+      box-shadow: var(--lift), var(--gloss);
+      padding: 14px; margin-bottom: 9px;
     }
-    .reflect-input:focus { border-color: var(--primary); }
-    .reflect-block { margin-bottom: 14px; }
-    .reflect-saved { background: #f0fff4; border-left: 4px solid var(--success); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 8px; }
-    .reflect-saved-date { font-size: .72rem; color: var(--text-light); margin-bottom: 6px; font-weight: 700; }
-    .reflect-saved-q { font-size: .78rem; color: var(--text-light); }
-    .reflect-saved-a { font-size: .88rem; margin-top: 2px; white-space: pre-wrap; }
+    .reflect-saved-date { font-size: .715rem; color: var(--subtle); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .reflect-saved-q { font-size: .72rem; color: var(--subtle); margin-top: 10px; }
+    .reflect-saved-a { font-size: .845rem; margin-top: 3px; color: var(--text); line-height: 1.55; white-space: pre-wrap; }
+
     /* ── Quote ── */
     .quote-box {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      border-radius: var(--radius); padding: 20px; color: white; text-align: center; margin-bottom: 14px;
+      background: linear-gradient(135deg, rgba(255,255,255,.82), rgba(255,255,255,.55));
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--lift), var(--gloss);
+      padding: 19px; margin-bottom: 11px;
     }
-    .quote-text { font-size: 1rem; font-weight: 600; line-height: 1.6; }
-    .quote-author { font-size: .8rem; opacity: .75; margin-top: 8px; }
+    .quote-text { font-size: .9rem; line-height: 1.7; color: var(--text); font-weight: 500; }
+    .quote-author { font-size: .755rem; color: var(--subtle); margin-top: 10px; }
+
+    /* ── Icon button ── */
+    .icon-btn {
+      width: 38px; height: 38px; border-radius: 12px; flex-shrink: 0;
+      background: var(--glass-2);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,.9);
+      box-shadow: var(--lift-sm), var(--gloss);
+      color: var(--muted); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .18s var(--ease);
+    }
+    .icon-btn svg { width: 16px; height: 16px; stroke-width: 1.9; }
+    .icon-btn:active { background: #fff; color: var(--text); }
+
+    /* ── Settings rows ── */
+    .set-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 0; border-bottom: 1px solid var(--divider);
+      cursor: pointer; min-width: 0;
+      transition: opacity .18s var(--ease);
+    }
+    .set-row:last-child { border-bottom: none; }
+    .set-row:active { opacity: .6; }
+    .set-icon {
+      font-size: .95rem; width: 34px; height: 34px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,.8); border: 1px solid rgba(255,255,255,.9);
+      border-radius: 11px; box-shadow: var(--lift-sm);
+    }
+    .set-info { flex: 1; min-width: 0; }
+    .set-name { font-size: .875rem; font-weight: 550; }
+    .set-desc { font-size: .715rem; color: var(--subtle); margin-top: 2px; line-height: 1.4; }
+    .set-arrow { color: var(--faint); font-size: 1.1rem; flex-shrink: 0; line-height: 1; }
+    .set-row.danger .set-name { color: var(--danger); }
+
+    /* ── Weekly bars ── */
+    .week-chart { display: flex; align-items: flex-end; gap: 6px; height: 88px; }
+    .week-col {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      gap: 8px; height: 100%; justify-content: flex-end;
+    }
+    .week-bar {
+      width: 100%; border-radius: 6px; min-height: 4px;
+      background: linear-gradient(180deg, #a855f7, var(--primary-deep));
+      transition: height .55s var(--ease);
+    }
+    .week-bar.empty { background: rgba(25,25,38,.08); }
+    .week-day { font-size: .68rem; color: var(--subtle); }
+    .week-day.today-label { color: var(--primary-deep); font-weight: 600; }
   </style>
 </head>
 <body>
@@ -348,7 +531,9 @@
       <div class="app-title">🌟 我的生活助手</div>
       <div class="header-date" id="headerDate"></div>
     </div>
-    <div id="headerWeather" style="font-size:1.8rem"></div>
+    <button class="icon-btn" onclick="openSettings()" title="設定">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
   </div>
   <div class="header-greeting" id="headerGreeting"></div>
   <div class="header-time" id="headerTime"></div>
@@ -407,9 +592,69 @@
       </div>
     </div>
 
+    <p class="section-label">本週習慣完成度</p>
+    <div class="card">
+      <div class="week-chart" id="weekChart"></div>
+    </div>
+
     <p class="section-label">近期待辦</p>
     <div class="card" id="dash-todos">
       <div class="empty"><div class="empty-icon">📋</div>無待辦事項</div>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div class="page" id="page-settings">
+    <p class="section-label">資料備份</p>
+    <div class="card">
+      <div class="set-row" onclick="exportData()">
+        <div class="set-icon">📤</div>
+        <div class="set-info">
+          <div class="set-name">匯出備份檔</div>
+          <div class="set-desc">下載所有資料，換手機或清快取前先存一份</div>
+        </div>
+        <div class="set-arrow">›</div>
+      </div>
+      <div class="set-row" onclick="document.getElementById('importFile').click()">
+        <div class="set-icon">📥</div>
+        <div class="set-info">
+          <div class="set-name">匯入備份檔</div>
+          <div class="set-desc">從備份檔還原資料（會覆蓋現有資料）</div>
+        </div>
+        <div class="set-arrow">›</div>
+      </div>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
+    </div>
+
+    <p class="section-label">通知</p>
+    <div class="card">
+      <div class="set-row" onclick="askNotify()">
+        <div class="set-icon">🔔</div>
+        <div class="set-info">
+          <div class="set-name">開啟番茄鐘通知</div>
+          <div class="set-desc" id="notifyStatus">計時結束時通知你</div>
+        </div>
+        <div class="set-arrow">›</div>
+      </div>
+    </div>
+
+    <p class="section-label">資料統計</p>
+    <div class="card" id="dataStats"></div>
+
+    <p class="section-label">危險操作</p>
+    <div class="card">
+      <div class="set-row danger" onclick="clearAllData()">
+        <div class="set-icon">🗑️</div>
+        <div class="set-info">
+          <div class="set-name">清除所有資料</div>
+          <div class="set-desc">無法復原，請先匯出備份</div>
+        </div>
+        <div class="set-arrow">›</div>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:20px 0;color:var(--subtle);font-size:.72rem;letter-spacing:1px">
+      我的生活助手 · 資料只存在這台裝置
     </div>
   </div>
 
@@ -419,7 +664,7 @@
     <div class="card">
       <div class="add-form">
         <input type="text" id="todoInput" placeholder="輸入待辦事項…" maxlength="80">
-        <select id="todoTag" style="flex:0 0 72px;border:2px solid var(--border);border-radius:var(--radius-sm);padding:10px;background:var(--bg);outline:none;font-size:.85rem">
+        <select id="todoTag" class="select" style="flex:0 0 76px">
           <option value="life">生活</option>
           <option value="work">工作</option>
           <option value="health">健康</option>
@@ -427,9 +672,9 @@
         <button class="add-btn" onclick="addTodo()">＋</button>
       </div>
       <div style="display:flex;gap:8px">
-        <button onclick="filterTodo('all')" id="filter-all" class="chip" style="cursor:pointer;background:var(--primary);color:white">全部</button>
-        <button onclick="filterTodo('pending')" id="filter-pending" class="chip" style="cursor:pointer">待完成</button>
-        <button onclick="filterTodo('done')" id="filter-done" class="chip" style="cursor:pointer">已完成</button>
+        <button onclick="filterTodo('all')" id="filter-all" class="chip active-chip">全部</button>
+        <button onclick="filterTodo('pending')" id="filter-pending" class="chip">待完成</button>
+        <button onclick="filterTodo('done')" id="filter-done" class="chip">已完成</button>
       </div>
     </div>
     <div class="card" id="todoList">
@@ -443,7 +688,7 @@
     <div class="card">
       <div class="add-form">
         <input type="text" id="habitName" placeholder="習慣名稱…" maxlength="30">
-        <select id="habitEmoji" style="flex:0 0 60px;border:2px solid var(--border);border-radius:var(--radius-sm);padding:10px;background:var(--bg);outline:none;font-size:1.1rem">
+        <select id="habitEmoji" class="select" style="flex:0 0 62px;font-size:1rem">
           <option>🏃</option><option>📚</option><option>🧘</option><option>💊</option>
           <option>🥗</option><option>😴</option><option>🖊️</option><option>🎵</option>
         </select>
@@ -461,7 +706,7 @@
     <div class="card">
       <textarea class="note-input" id="noteInput" placeholder="記下你的想法、靈感…"></textarea>
       <div style="display:flex;justify-content:flex-end;margin-top:8px">
-        <button class="add-btn" style="width:auto;padding:0 16px;border-radius:10px;font-size:.9rem" onclick="addNote()">儲存筆記</button>
+        <button class="btn-full" onclick="addNote()">儲存筆記</button>
       </div>
     </div>
     <div id="notesList"></div>
@@ -490,17 +735,17 @@
       </div>
       <div class="budget-form">
         <div class="budget-row">
-          <select id="budgetType" style="flex:0 0 72px;border:2px solid var(--border);border-radius:var(--radius-sm);padding:10px;background:var(--bg);outline:none;font-size:.9rem">
+          <select id="budgetType" class="select" style="flex:0 0 78px">
             <option value="expense">支出</option>
             <option value="income">收入</option>
           </select>
-          <select id="budgetCat" style="flex:1;border:2px solid var(--border);border-radius:var(--radius-sm);padding:10px;background:var(--bg);outline:none;font-size:.9rem"></select>
+          <select id="budgetCat" class="select" style="flex:1"></select>
         </div>
         <div class="budget-row">
           <input class="budget-input" type="number" id="budgetAmount" placeholder="金額" min="0">
           <input class="budget-input" type="text" id="budgetDesc" placeholder="描述（選填）" style="flex:1.5">
         </div>
-        <button class="add-btn" style="width:100%;border-radius:10px;height:44px;font-size:.95rem;font-weight:700" onclick="addBudget()">新增記錄</button>
+        <button class="btn-full" onclick="addBudget()">新增記錄</button>
       </div>
     </div>
     <p class="section-label">本月記錄</p>
@@ -538,9 +783,9 @@
       </div>
       <div class="pomo-sessions" id="pomoSessions"></div>
       <div style="display:flex;gap:8px;justify-content:center;margin-top:14px">
-        <button onclick="setPomoMode(25,5)" class="chip" id="pomo-m-2525" style="cursor:pointer;background:var(--primary);color:white">25/5</button>
-        <button onclick="setPomoMode(50,10)" class="chip" id="pomo-m-5010" style="cursor:pointer">50/10</button>
-        <button onclick="setPomoMode(45,15)" class="chip" id="pomo-m-4515" style="cursor:pointer">45/15</button>
+        <button onclick="setPomoMode(25,5)" class="chip active-chip" id="pomo-m-2525">25/5</button>
+        <button onclick="setPomoMode(50,10)" class="chip" id="pomo-m-5010">50/10</button>
+        <button onclick="setPomoMode(45,15)" class="chip" id="pomo-m-4515">45/15</button>
       </div>
     </div>
 
@@ -549,7 +794,7 @@
     <div class="card">
       <div class="add-form">
         <input type="text" id="chalName" placeholder="挑戰名稱（如：每天跑步）" maxlength="20">
-        <select id="chalDays" style="flex:0 0 68px;border:2px solid var(--border);border-radius:var(--radius-sm);padding:10px;background:var(--bg);outline:none;font-size:.85rem">
+        <select id="chalDays" class="select" style="flex:0 0 72px">
           <option value="21">21天</option>
           <option value="30">30天</option>
           <option value="66">66天</option>
@@ -577,7 +822,7 @@
         <div class="reflect-q">🎯 明天最重要的一件事是什麼？</div>
         <textarea class="reflect-input" id="ref3" placeholder="寫下來…" rows="2"></textarea>
       </div>
-      <button class="add-btn" style="width:100%;border-radius:10px;height:44px;font-size:.95rem;font-weight:700" onclick="saveReflect()">儲存今日反思</button>
+      <button class="btn-full" onclick="saveReflect()">儲存今日反思</button>
     </div>
     <div id="reflectHistory"></div>
 
@@ -656,9 +901,6 @@ function updateClock() {
     `${now.getFullYear()} 年 ${months[now.getMonth()]} 月 ${now.getDate()} 日　星期${weekDays[now.getDay()]}`;
   const greeting = h<5?'夜深了 🌙':h<12?'早安 ☀️':h<14?'午安 🌤':h<18?'下午好 🌈':'晚安 🌙';
   document.getElementById('headerGreeting').textContent = greeting;
-  const weathers = ['☀️','⛅','🌤','🌥','☁️'];
-  if(!document.getElementById('headerWeather').textContent)
-    document.getElementById('headerWeather').textContent = weathers[Math.floor(Math.random()*weathers.length)];
 }
 updateClock();
 setInterval(updateClock, 30000);
@@ -668,9 +910,15 @@ function showPage(name, btn) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  btn.classList.add('active');
+  if(btn) btn.classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
   if(name==='dashboard') refreshDashboard();
+}
+
+function openSettings() {
+  showPage('settings');
+  renderDataStats();
+  updateNotifyStatus();
 }
 
 // ─── Mood ─────────────────────────────────────────────────────────────
@@ -758,8 +1006,7 @@ function filterTodo(f) {
   todoFilter=f;
   ['all','pending','done'].forEach(v=>{
     const el=document.getElementById('filter-'+v);
-    el.style.background = v===f?'var(--primary)':'var(--bg)';
-    el.style.color = v===f?'white':'var(--text-light)';
+    el.classList.toggle('active-chip', v===f);
   });
   renderTodos();
 }
@@ -958,6 +1205,8 @@ function refreshDashboard() {
   document.getElementById('stat-budget').textContent=`$${Math.abs(balance).toLocaleString()}`;
   document.getElementById('prog-budget').style.width=income?Math.min(Math.max(balance/income*100,0),100)+'%':'0%';
 
+  renderWeekChart();
+
   // Recent todos
   const recent=todos.filter(t=>!t.done).slice(0,4);
   const dashTodos=document.getElementById('dash-todos');
@@ -1000,9 +1249,21 @@ function loadQuote() {
 loadQuote();
 
 // ─── Pomodoro ─────────────────────────────────────────────────────────
+// 用時間戳計算剩餘秒數，手機鎖屏 / 切到背景後回來仍然準確
 let pomoFocusMin=25, pomoRestMin=5;
-let pomoSeconds=25*60, pomoRunning=false, pomoPhase='focus', pomoTimer=null, pomoSession=0;
-const CIRC = 2*Math.PI*80; // circumference
+let pomoSeconds=25*60, pomoRunning=false, pomoPhase='focus', pomoTimer=null;
+let pomoEndAt=0;                       // 目前這段結束的時間戳
+const CIRC = 2*Math.PI*80;             // 圓周長
+
+function pomoTodayCount() {
+  return (S.get('pomodoros',{}))[todayKey()] || 0;
+}
+function bumpPomoCount() {
+  const data=S.get('pomodoros',{});
+  const td=todayKey();
+  data[td]=(data[td]||0)+1;
+  S.set('pomodoros',data);
+}
 
 function setPomoMode(f,r) {
   pomoReset();
@@ -1012,57 +1273,82 @@ function setPomoMode(f,r) {
   document.getElementById('pomoRing').className='pomo-ring focus';
   renderPomoTime();
   ['2525','5010','4515'].forEach(k=>{
-    const el=document.getElementById('pomo-m-'+k);
-    el.style.background='var(--bg)'; el.style.color='var(--text-light)';
+    document.getElementById('pomo-m-'+k).classList.remove('active-chip');
   });
-  document.getElementById(`pomo-m-${f}${r}`).style.background='var(--primary)';
-  document.getElementById(`pomo-m-${f}${r}`).style.color='white';
+  document.getElementById(`pomo-m-${f}${r}`).classList.add('active-chip');
 }
 
 function pomoStart() {
-  if(pomoRunning) {
-    pomoRunning=false; clearInterval(pomoTimer);
-    document.getElementById('pomoBtnStart').textContent='▶ 繼續';
-    document.getElementById('pomoBtnStart').className='pomo-btn start';
-    return;
-  }
+  if(pomoRunning) { pomoPause(); return; }
   pomoRunning=true;
-  document.getElementById('pomoBtnStart').textContent='⏸ 暫停';
-  document.getElementById('pomoBtnStart').className='pomo-btn pause';
-  pomoTimer=setInterval(()=>{
-    pomoSeconds--;
-    renderPomoTime();
-    if(pomoSeconds<=0) {
-      clearInterval(pomoTimer); pomoRunning=false;
-      if(pomoPhase==='focus') {
-        pomoSession++;
-        pomoPhase='rest';
-        pomoSeconds=pomoRestMin*60;
-        document.getElementById('pomoRing').className='pomo-ring rest';
-        document.getElementById('pomoBtnStart').textContent='▶ 開始休息';
-        document.getElementById('pomoBtnStart').className='pomo-btn start';
-        try{ new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAA...').play(); }catch(e){}
-        renderPomoSessions();
-        alert(`✅ 專注完成！休息 ${pomoRestMin} 分鐘 🎉`);
-      } else {
-        pomoPhase='focus';
-        pomoSeconds=pomoFocusMin*60;
-        document.getElementById('pomoRing').className='pomo-ring focus';
-        document.getElementById('pomoBtnStart').textContent='▶ 開始專注';
-        document.getElementById('pomoBtnStart').className='pomo-btn start';
-        alert(`😌 休息結束！再來一個番茄鐘？`);
-      }
-      renderPomoTime();
+  pomoEndAt=Date.now()+pomoSeconds*1000;
+  const btn=document.getElementById('pomoBtnStart');
+  btn.textContent='⏸ 暫停';
+  btn.className='pomo-btn pause';
+  clearInterval(pomoTimer);
+  pomoTimer=setInterval(pomoTick,250);
+  pomoTick();
+}
+
+function pomoPause() {
+  pomoRunning=false;
+  clearInterval(pomoTimer);
+  pomoSeconds=Math.max(0,Math.round((pomoEndAt-Date.now())/1000));
+  const btn=document.getElementById('pomoBtnStart');
+  btn.textContent='▶ 繼續';
+  btn.className='pomo-btn start';
+  renderPomoTime();
+}
+
+function pomoTick() {
+  if(!pomoRunning) return;
+  pomoSeconds=Math.max(0,Math.round((pomoEndAt-Date.now())/1000));
+  renderPomoTime();
+  if(pomoSeconds>0) return;
+
+  // 這一段結束
+  clearInterval(pomoTimer);
+  pomoRunning=false;
+  const btn=document.getElementById('pomoBtnStart');
+  if(pomoPhase==='focus') {
+    bumpPomoCount();
+    pomoPhase='rest';
+    pomoSeconds=pomoRestMin*60;
+    document.getElementById('pomoRing').className='pomo-ring rest';
+    btn.textContent='▶ 開始休息';
+    btn.className='pomo-btn start';
+    renderPomoSessions();
+    pomoNotify('🍅 專注完成！',`休息 ${pomoRestMin} 分鐘吧`);
+  } else {
+    pomoPhase='focus';
+    pomoSeconds=pomoFocusMin*60;
+    document.getElementById('pomoRing').className='pomo-ring focus';
+    btn.textContent='▶ 開始專注';
+    btn.className='pomo-btn start';
+    pomoNotify('😌 休息結束','再來一個番茄鐘？');
+  }
+  renderPomoTime();
+}
+
+// 震動 + 系統通知（沒權限就退回 alert）
+function pomoNotify(title, body) {
+  try { if(navigator.vibrate) navigator.vibrate([200,100,200]); } catch(e){}
+  try {
+    if(window.Notification && Notification.permission==='granted') {
+      new Notification(title,{body,icon:'icon.svg'});
+      return;
     }
-  },1000);
+  } catch(e){}
+  setTimeout(()=>alert(`${title}\n${body}`),50);
 }
 
 function pomoReset() {
   clearInterval(pomoTimer); pomoRunning=false;
   pomoSeconds=pomoFocusMin*60; pomoPhase='focus';
   document.getElementById('pomoRing').className='pomo-ring focus';
-  document.getElementById('pomoBtnStart').textContent='▶ 開始';
-  document.getElementById('pomoBtnStart').className='pomo-btn start';
+  const btn=document.getElementById('pomoBtnStart');
+  btn.textContent='▶ 開始';
+  btn.className='pomo-btn start';
   renderPomoTime();
 }
 
@@ -1071,18 +1357,126 @@ function renderPomoTime() {
   document.getElementById('pomoTime').textContent=
     `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   const total=(pomoPhase==='focus'?pomoFocusMin:pomoRestMin)*60;
-  const pct=pomoSeconds/total;
-  document.getElementById('pomoArc').style.strokeDashoffset=CIRC*pct;
-  document.getElementById('pomoLabel').textContent=pomoPhase==='focus'?'專注中 🍅':'休息中 😌';
+  // 起始是完整的環，隨時間逐漸消耗（倒數計時的直覺方向）
+  document.getElementById('pomoArc').style.strokeDashoffset=CIRC*(1-pomoSeconds/total);
+  document.getElementById('pomoLabel').textContent=
+    pomoRunning ? (pomoPhase==='focus'?'專注中 🍅':'休息中 😌')
+                : (pomoPhase==='focus'?'準備專注':'準備休息');
 }
 
 function renderPomoSessions() {
+  const n=pomoTodayCount();
   const dots=document.getElementById('pomoSessions');
-  dots.innerHTML=Array.from({length:Math.min(pomoSession+1,8)},(_,i)=>
-    `<div class="pomo-dot${i<pomoSession?' done':''}"></div>`
-  ).join('');
+  dots.innerHTML=Array.from({length:Math.max(n+1,4)},(_,i)=>
+    `<div class="pomo-dot${i<n?' done':''}"></div>`
+  ).join('') + `<span style="font-size:.7rem;color:var(--subtle);margin-left:6px">今日 ${n} 個</span>`;
 }
+
+// 從背景切回來時立刻補算，不等下一個 tick
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) pomoTick(); });
+
 renderPomoTime(); renderPomoSessions();
+
+// ─── 本週習慣圖表 ─────────────────────────────────────────────────────
+function renderWeekChart() {
+  const habits=S.get('habits',[]);
+  const days=last7Days();
+  const td=todayKey();
+  const labels=['日','一','二','三','四','五','六'];
+  document.getElementById('weekChart').innerHTML=days.map(d=>{
+    const total=habits.length;
+    const done=habits.filter(h=>h.records[d]).length;
+    const pct=total?done/total:0;
+    const dow=labels[new Date(d).getDay()];
+    return `<div class="week-col">
+      <div class="week-bar${pct===0?' empty':''}" style="height:${Math.max(pct*100,3)}%"></div>
+      <div class="week-day${d===td?' today-label':''}">${dow}</div>
+    </div>`;
+  }).join('');
+}
+
+// ─── 設定：備份 / 還原 / 通知 / 清除 ──────────────────────────────────
+const DATA_KEYS=['todos','habits','notes','budget','water','moods','challenges','reflects','pomodoros'];
+
+function exportData() {
+  const dump={ _app:'我的生活助手', _version:1, _exportedAt:new Date().toISOString() };
+  DATA_KEYS.forEach(k=>{ dump[k]=S.get(k,null); });
+  const blob=new Blob([JSON.stringify(dump,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`生活助手備份_${todayKey()}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+function importData(input) {
+  const file=input.files && input.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    let data;
+    try { data=JSON.parse(reader.result); }
+    catch(e){ alert('❌ 檔案格式不正確，請選擇匯出的備份檔'); input.value=''; return; }
+    if(!data || data._app!=='我的生活助手') {
+      if(!confirm('這個檔案不像是本 App 的備份檔，仍要匯入嗎？')) { input.value=''; return; }
+    }
+    if(!confirm('匯入會覆蓋目前所有資料，確定嗎？')) { input.value=''; return; }
+    DATA_KEYS.forEach(k=>{ if(data[k]!=null) S.set(k,data[k]); });
+    input.value='';
+    alert('✅ 匯入完成！');
+    location.reload();
+  };
+  reader.readAsText(file);
+}
+
+function askNotify() {
+  if(!window.Notification) { alert('這個瀏覽器不支援通知功能'); return; }
+  if(Notification.permission==='granted') { alert('通知已經開啟了 ✅'); return; }
+  if(Notification.permission==='denied') {
+    alert('通知已被封鎖，請到瀏覽器設定中重新允許本網站的通知');
+    return;
+  }
+  Notification.requestPermission().then(()=>updateNotifyStatus());
+}
+
+function updateNotifyStatus() {
+  const el=document.getElementById('notifyStatus');
+  if(!el) return;
+  if(!window.Notification) { el.textContent='此瀏覽器不支援通知'; return; }
+  el.textContent =
+    Notification.permission==='granted' ? '已開啟 ✅' :
+    Notification.permission==='denied'  ? '已封鎖，請到瀏覽器設定開啟' :
+    '點擊開啟，計時結束時通知你';
+}
+
+function renderDataStats() {
+  const el=document.getElementById('dataStats');
+  if(!el) return;
+  const rows=[
+    ['✅','待辦事項',S.get('todos',[]).length+' 筆'],
+    ['🔥','習慣',S.get('habits',[]).length+' 個'],
+    ['🏆','挑戰',S.get('challenges',[]).length+' 個'],
+    ['📝','筆記',S.get('notes',[]).length+' 則'],
+    ['💰','記帳',S.get('budget',[]).length+' 筆'],
+    ['🌙','反思',S.get('reflects',[]).length+' 天'],
+    ['🍅','今日番茄鐘',pomoTodayCount()+' 個'],
+  ];
+  el.innerHTML=rows.map(([icon,name,val])=>`
+    <div class="set-row" style="cursor:default">
+      <div class="set-icon">${icon}</div>
+      <div class="set-info"><div class="set-name">${name}</div></div>
+      <div class="text-sm">${val}</div>
+    </div>`).join('');
+}
+
+function clearAllData() {
+  if(!confirm('⚠️ 這會刪除所有資料且無法復原。\n\n建議先「匯出備份檔」。\n\n確定要清除嗎？')) return;
+  if(!confirm('再確認一次：真的要刪除全部資料嗎？')) return;
+  DATA_KEYS.forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+  alert('已清除所有資料');
+  location.reload();
+}
 
 // ─── Challenge Tracker ────────────────────────────────────────────────
 function addChallenge() {
