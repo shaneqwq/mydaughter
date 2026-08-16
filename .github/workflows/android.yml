@@ -15,7 +15,7 @@ on:
   workflow_dispatch:        # 也可以到 Actions 頁面手動按按鈕重新編譯
 
 permissions:
-  contents: read
+  contents: write           # 發佈 Release 需要寫入權限
 
 jobs:
   build:
@@ -39,16 +39,38 @@ jobs:
         working-directory: android
         run: gradle assembleDebug --no-daemon --stacktrace
 
-      - name: 重新命名檔案
+      - name: 整理輸出
         run: |
           mkdir -p out
-          cp android/app/build/outputs/apk/debug/app-debug.apk "out/生活助手.apk"
+          # 檔名用 ASCII，手機下載時網址才不會被編碼成一長串亂碼
+          cp android/app/build/outputs/apk/debug/app-debug.apk out/life-assistant.apk
           ls -lh out/
 
-      - name: 上傳 APK
+      - name: 上傳為 Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: 生活助手-APK
+          name: life-assistant-apk
           path: out/*.apk
           if-no-files-found: error
           retention-days: 90
+
+      # Artifacts 只能在電腦版網頁下載，而且是 zip。
+      # 另外發佈成 Release，手機點連結就直接下載 apk，免登入、免解壓縮。
+      - name: 發佈到 Releases
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NOTES="自動編譯於 $(date -u '+%Y-%m-%d %H:%M') UTC
+          來源 commit: ${GITHUB_SHA:0:7}
+
+          手機直接下載：
+          https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/life-assistant.apk"
+
+          if gh release view latest >/dev/null 2>&1; then
+            gh release upload latest out/life-assistant.apk --clobber
+            gh release edit   latest --notes "$NOTES" --latest
+          else
+            gh release create latest out/life-assistant.apk \
+              --title "生活助手（最新版）" --notes "$NOTES" --latest
+          fi
