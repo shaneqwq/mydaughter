@@ -545,38 +545,80 @@
     /* ── 掃描器 ── */
     .scanner {
       position: fixed; inset: 0; z-index: 300; display: none;
-      background: #000;
+      background: #07070c;
     }
     .scanner.on { display: block; }
-    #scanVideo { width: 100%; height: 100%; object-fit: cover; }
+    #scanVideo { width: 100%; height: 100%; object-fit: cover; display: block; }
+
     .scan-mask {
       position: absolute; inset: 0;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 22px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 26px;
+      padding-bottom: 8vh;
     }
+
+    /* 取景框：只畫四個角，比整圈框線俐落，也不會擋到內容 */
     .scan-frame {
-      width: 250px; height: 250px; border-radius: 22px;
-      border: 2px solid rgba(255,255,255,.85);
-      box-shadow: 0 0 0 100vmax rgba(0,0,0,.55);
-      position: relative; overflow: hidden;
+      width: min(70vw, 268px); aspect-ratio: 1;
+      position: relative; border-radius: 26px;
+      /* 用超大外陰影把框外壓暗，框內保持透明 */
+      box-shadow: 0 0 0 100vmax rgba(6,6,12,.68);
     }
+    .scan-frame .sc {
+      position: absolute; width: 34px; height: 34px;
+      border: 3px solid #fff; border-radius: 3px;
+      filter: drop-shadow(0 0 6px rgba(0,0,0,.5));
+    }
+    .scan-frame .tl { top: -2px; left:  -2px; border-right: 0; border-bottom: 0; border-radius: 16px 0 0 0; }
+    .scan-frame .tr { top: -2px; right: -2px; border-left:  0; border-bottom: 0; border-radius: 0 16px 0 0; }
+    .scan-frame .bl { bottom: -2px; left:  -2px; border-right: 0; border-top: 0; border-radius: 0 0 0 16px; }
+    .scan-frame .br { bottom: -2px; right: -2px; border-left:  0; border-top: 0; border-radius: 0 0 16px 0; }
+
     .scan-line {
-      position: absolute; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, transparent, #818cf8, transparent);
-      box-shadow: 0 0 12px #818cf8;
-      animation: sweep 2.2s ease-in-out infinite;
+      position: absolute; left: 8px; right: 8px; height: 2px; border-radius: 2px;
+      background: linear-gradient(90deg, transparent, #a5b4fc 20%, #fff 50%, #a5b4fc 80%, transparent);
+      box-shadow: 0 0 14px rgba(165,180,252,.9);
+      animation: sweep 2.4s cubic-bezier(.45,0,.55,1) infinite;
     }
-    @keyframes sweep { 0%,100% { top: 6%; } 50% { top: 94%; } }
+    @keyframes sweep {
+      0%, 100% { top: 10%;  opacity: .35; }
+      50%      { top: 88%;  opacity: 1; }
+    }
+
     .scan-hint {
-      color: #fff; font-size: .84rem; text-align: center;
-      padding: 9px 16px; border-radius: 99px;
-      background: rgba(0,0,0,.5); max-width: 86%; line-height: 1.5;
+      color: rgba(255,255,255,.92); font-size: .88rem; line-height: 1.6;
+      text-align: center; max-width: 78%; letter-spacing: .01em;
+      text-shadow: 0 1px 10px rgba(0,0,0,.8);
+    }
+
+    /* 頂部列 */
+    .scan-bar {
+      position: absolute; top: 0; left: 0; right: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: calc(14px + env(safe-area-inset-top)) 16px 14px;
+      background: linear-gradient(rgba(6,6,12,.72), transparent);
+    }
+    .scan-bar-title {
+      color: #fff; font-size: .95rem; font-weight: 600;
+      text-shadow: 0 1px 8px rgba(0,0,0,.7);
     }
     .scan-close {
-      position: absolute; top: calc(14px + env(safe-area-inset-top)); right: 14px;
-      width: 40px; height: 40px; border-radius: 50%; border: none;
-      background: rgba(0,0,0,.5); color: #fff; font-size: 1.1rem; cursor: pointer;
+      width: 38px; height: 38px; border-radius: 50%; border: none;
+      background: rgba(255,255,255,.16);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      color: #fff; cursor: pointer; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
+      transition: background .18s var(--ease);
+    }
+    .scan-close svg { width: 17px; height: 17px; }
+    .scan-close:active { background: rgba(255,255,255,.3); }
+
+    /* 掃到東西時閃一下，給個明確回饋 */
+    .scanner.hit .scan-frame { animation: hit .32s var(--ease); }
+    @keyframes hit {
+      0%   { box-shadow: 0 0 0 100vmax rgba(6,6,12,.68); }
+      45%  { box-shadow: 0 0 0 100vmax rgba(99,102,241,.55); }
+      100% { box-shadow: 0 0 0 100vmax rgba(6,6,12,.68); }
     }
 
     /* ── 底部面板 ── */
@@ -1113,11 +1155,21 @@
 <!-- ── 掃描器 ── -->
 <div class="scanner" id="scanner">
   <video id="scanVideo" playsinline muted></video>
+
   <div class="scan-mask">
-    <div class="scan-frame"><div class="scan-line"></div></div>
-    <div class="scan-hint" id="scanHint">將條碼或發票 QR 對準框內</div>
+    <div class="scan-frame">
+      <i class="sc tl"></i><i class="sc tr"></i><i class="sc bl"></i><i class="sc br"></i>
+      <div class="scan-line"></div>
+    </div>
+    <div class="scan-hint" id="scanHint">將發票 QR 或商品條碼對準框內</div>
   </div>
-  <button class="scan-close" onclick="closeScanner()">✕</button>
+
+  <div class="scan-bar">
+    <span class="scan-bar-title">掃描</span>
+    <button class="scan-close" onclick="closeScanner()" aria-label="關閉">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
 </div>
 
 <!-- ── 底部確認面板 ── -->
@@ -1895,7 +1947,7 @@ async function openScanner(mode) {
   const hint = document.getElementById('scanHint');
   hint.textContent = scanMode === 'barcode'
     ? '將商品條碼對準框內'
-    : '將條碼或發票 QR 對準框內';
+    : '將發票 QR 或商品條碼對準框內';
   el.classList.add('on');
 
   try {
@@ -1941,8 +1993,16 @@ async function scanTick() {
   if (!value) return;
 
   try { if (navigator.vibrate) navigator.vibrate(90); } catch (e) {}
-  closeScanner();
-  handleScan(value, code.format);
+
+  // 先閃一下給明確回饋，再關閉相機
+  clearInterval(scanTimer); scanTimer = null;
+  const el = document.getElementById('scanner');
+  el.classList.add('hit');
+  setTimeout(() => {
+    el.classList.remove('hit');
+    closeScanner();
+    handleScan(value, code.format);
+  }, 260);
 }
 
 // 掃到東西之後，決定要走記帳還是物品
