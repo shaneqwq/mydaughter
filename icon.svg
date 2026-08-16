@@ -1,28 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%"   stop-color="#1b1b34"/>
-      <stop offset="100%" stop-color="#0a0a14"/>
+      <stop offset="0%"   stop-color="#f7f7fd"/>
+      <stop offset="100%" stop-color="#e9eaf6"/>
     </linearGradient>
     <linearGradient id="mark" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%"   stop-color="#a5b4fc"/>
-      <stop offset="100%" stop-color="#c084fc"/>
+      <stop offset="0%"   stop-color="#4f46e5"/>
+      <stop offset="100%" stop-color="#9333ea"/>
     </linearGradient>
     <linearGradient id="edge" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%"   stop-color="#ffffff" stop-opacity=".28"/>
-      <stop offset="55%"  stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity=".95"/>
+      <stop offset="55%"  stop-color="#ffffff" stop-opacity=".25"/>
     </linearGradient>
   </defs>
 
   <rect width="512" height="512" rx="114" fill="url(#bg)"/>
-  <!-- 背景光暈 -->
-  <circle cx="120" cy="96"  r="150" fill="#6366f1" opacity=".38"/>
-  <circle cx="410" cy="180" r="130" fill="#c026d3" opacity=".28"/>
-  <circle cx="360" cy="440" r="140" fill="#22d3ee" opacity=".18"/>
+  <!-- 柔和光暈 -->
+  <circle cx="112" cy="88"  r="155" fill="#818cf8" opacity=".45"/>
+  <circle cx="416" cy="176" r="135" fill="#f472b6" opacity=".38"/>
+  <circle cx="368" cy="448" r="145" fill="#38bdf8" opacity=".32"/>
+  <circle cx="90"  cy="420" r="120" fill="#fdba74" opacity=".30"/>
   <!-- 玻璃面板 -->
   <rect x="96" y="96" width="320" height="320" rx="80"
-        fill="#ffffff" fill-opacity=".10"
-        stroke="#ffffff" stroke-opacity=".22" stroke-width="2"/>
+        fill="#ffffff" fill-opacity=".62"
+        stroke="#ffffff" stroke-opacity=".9" stroke-width="2.5"/>
   <rect x="96" y="96" width="320" height="320" rx="80" fill="url(#edge)"/>
   <!-- 勾選 -->
   <path d="M176 258 L232 314 L342 196"
