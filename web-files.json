@@ -1,0 +1,10 @@
+{
+  "_comment": "自動更新要下載的網頁檔案清單。放在伺服器端，之後新增檔案不必重裝 APK。",
+  "files": [
+    "index.html",
+    "manifest.json",
+    "sw.js",
+    "icon.svg",
+    "jsqr.js"
+  ]
+}

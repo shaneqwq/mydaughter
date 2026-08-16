@@ -1,10 +1,11 @@
-const CACHE = 'life-app-v4';
+const CACHE = 'life-app-v5';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon.svg',
-  './jsqr.js'
+  './jsqr.js',
+  './web-files.json'
 ];
 
 self.addEventListener('install', e => {
