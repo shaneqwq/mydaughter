@@ -26,7 +26,9 @@ final class WebUpdater {
 
     /** 內容來源：GitHub Pages 上 main 分支的部署結果 */
     private static final String BASE = "https://shaneqwq.github.io/mydaughter/";
-    private static final String[] FILES = { "index.html", "manifest.json", "sw.js", "icon.svg", "jsqr.js" };
+    /** 清單抓不到時的退路；正常情況以伺服器上的 web-files.json 為準 */
+    private static final String[] FALLBACK_FILES = { "index.html", "manifest.json", "sw.js", "icon.svg" };
+    private static final String FILE_LIST = "web-files.json";
 
     private static final String PREFS = "web_update";
     private static final String KEY_HASH = "content_hash";
@@ -95,7 +97,7 @@ final class WebUpdater {
         if (!tmp.mkdirs()) throw new IOException("無法建立暫存資料夾");
 
         write(new File(tmp, "index.html"), html);
-        for (String f : FILES) {
+        for (String f : resolveFileList()) {
             if (f.equals("index.html")) continue;
             write(new File(tmp, f), fetch(BASE + f));
         }
@@ -113,6 +115,29 @@ final class WebUpdater {
 
         sp.edit().putString(KEY_HASH, hash).apply();
         return true;
+    }
+
+    /**
+     * 要下載哪些檔案，以伺服器上的清單為準。
+     * 寫死在 App 裡的話，網頁端每新增一個檔案就得重裝 APK，
+     * 而且舊版 App 會抓到「引用了不存在檔案」的半套內容。
+     */
+    private static String[] resolveFileList() {
+        try {
+            String json = new String(fetch(BASE + FILE_LIST), "UTF-8");
+            org.json.JSONArray arr = new org.json.JSONObject(json).getJSONArray("files");
+            java.util.List<String> out = new java.util.ArrayList<>();
+            for (int i = 0; i < arr.length(); i++) {
+                String f = arr.optString(i, "").trim();
+                // 只收單純的檔名，不接受路徑跳脫
+                if (f.isEmpty() || f.contains("/") || f.contains("\\") || f.contains("..")) continue;
+                if (!f.equals(FILE_LIST) && !out.contains(f)) out.add(f);
+            }
+            if (!out.isEmpty()) return out.toArray(new String[0]);
+        } catch (Exception ignored) {
+            // 清單抓不到或格式不對就用退路，至少不會整個更新失敗
+        }
+        return FALLBACK_FILES;
     }
 
     // ── 工具 ──────────────────────────────────────────────────────────
