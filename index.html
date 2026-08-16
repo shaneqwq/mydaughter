@@ -561,6 +561,20 @@
     .btn-full .ic { width: 17px; height: 17px; vertical-align: -0.2em; margin-right: 7px; }
     .reflect-q .ic { width: 14px; height: 14px; color: var(--primary-deep); vertical-align: -0.14em; margin-right: 5px; }
 
+    /* 等待相機／授權時的提示 */
+    .scan-busy {
+      position: fixed; inset: 0; z-index: 290;
+      display: none; align-items: center; justify-content: center;
+      background: rgba(25,25,38,.28); backdrop-filter: blur(2px);
+    }
+    .scan-busy.on { display: flex; }
+    .scan-busy-box {
+      background: rgba(255,255,255,.94); color: var(--text);
+      border: 1px solid var(--line); border-radius: 14px;
+      padding: 13px 20px; font-size: .87rem; font-weight: 500;
+      box-shadow: var(--lift);
+    }
+
     /* ── 掃描器 ── */
     .scanner {
       position: fixed; inset: 0; z-index: 300; display: none;
@@ -1187,6 +1201,8 @@
 </div><!-- end pages wrapper -->
 
 <!-- ── 掃描器 ── -->
+<div class="scan-busy" id="scanBusy"><div class="scan-busy-box">正在開啟相機…</div></div>
+
 <div class="scanner" id="scanner">
   <video id="scanVideo" playsinline muted></video>
 
@@ -2014,6 +2030,18 @@ function parseEInvoice(raw) {
 // ─── 掃描器 ───────────────────────────────────────────────────────────
 let scanStream = null, scanTimer = null, scanDetector = null, scanMode = 'auto';
 let scanTrack = null, scanNoHitSince = 0, scanHasTorch = false, scanTorchOn = false;
+let scanOpening = false;
+
+// 等待授權／相機啟動時的提示。授權視窗通常馬上就跳出來，
+// 所以延遲一下再顯示，避免只是閃一下反而干擾。
+let scanBusyTimer = null;
+function showScanBusy(on) {
+  const el = document.getElementById('scanBusy');
+  clearTimeout(scanBusyTimer);
+  if (!el) return;
+  if (on) scanBusyTimer = setTimeout(() => el.classList.add('on'), 450);
+  else    el.classList.remove('on');
+}
 // 診斷用：分別記錄原生 API 與備援解碼器的成績
 let scanNativeTried = 0, scanNativeHits = 0, scanFallbackHits = 0;
 
@@ -2085,7 +2113,12 @@ async function openScanner(mode) {
     : '將發票 QR 或商品條碼對準框內';
   scanNoHitSince = 0;
   scanNativeTried = scanNativeHits = scanFallbackHits = 0;
-  el.classList.add('on');
+
+  // 掃描畫面留到相機真的開起來才顯示。
+  // 先開畫面再要權限的話，系統的授權視窗會蓋在掃描畫面上，
+  // 順序看起來像是「先闖進去才問可不可以」。
+  scanOpening = true;
+  showScanBusy(true);
 
   try {
     scanDetector = null;
@@ -2107,9 +2140,15 @@ async function openScanner(mode) {
       },
       audio: false
     });
+    // 使用者在授權視窗按了取消，或中途關掉了
+    if (!scanOpening) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; return; }
+
     const v = document.getElementById('scanVideo');
     v.srcObject = scanStream;
     await v.play();
+
+    showScanBusy(false);
+    el.classList.add('on');          // 相機備妥才顯示掃描畫面
 
     scanTrack = scanStream.getVideoTracks()[0];
     await setupCamera(scanTrack);
@@ -2119,13 +2158,15 @@ async function openScanner(mode) {
   } catch (err) {
     closeScanner();
     const name = err && err.name;
-    if (name === 'NotAllowedError')      alert('相機權限被拒絕。\n請到瀏覽器設定允許本網站使用相機。');
+    if (name === 'NotAllowedError')      alert('沒有相機權限，無法掃描。\n\n若要開啟，請到系統設定中允許本 App 使用相機。');
     else if (name === 'NotFoundError')   alert('找不到相機裝置。');
     else                                 alert('無法開啟相機：' + (err && err.message ? err.message : name || '未知錯誤'));
   }
 }
 
 function closeScanner() {
+  scanOpening = false;
+  showScanBusy(false);
   clearInterval(scanTimer); scanTimer = null;
   if (scanTorchOn && scanTrack) {
     try { scanTrack.applyConstraints({ advanced: [{ torch: false }] }); } catch (e) {}
@@ -2460,7 +2501,7 @@ window.__updateStatus = function (message, updated) {
 };
 
 // 內容版本：每次改動網頁時一併更新，方便確認手機上跑的是哪一版
-const CONTENT_VERSION = '2026-08-16f';
+const CONTENT_VERSION = '2026-08-16g';
 
 function initUpdateSection() {
   const el = document.getElementById('updateStatus');
