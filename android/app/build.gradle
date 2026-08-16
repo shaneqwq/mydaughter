@@ -10,8 +10,8 @@ android {
         applicationId "com.shaneqwq.lifeassistant"
         minSdk 26                // 8.0 以上，WebView 才有足夠新的 Chromium
         targetSdk 34
-        versionCode 4
-        versionName "1.3"
+        versionCode 5
+        versionName "1.4"
     }
 
     buildTypes {
