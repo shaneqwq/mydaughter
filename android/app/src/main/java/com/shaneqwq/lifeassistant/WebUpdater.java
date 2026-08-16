@@ -26,7 +26,7 @@ final class WebUpdater {
 
     /** 內容來源：GitHub Pages 上 main 分支的部署結果 */
     private static final String BASE = "https://shaneqwq.github.io/mydaughter/";
-    private static final String[] FILES = { "index.html", "manifest.json", "sw.js", "icon.svg" };
+    private static final String[] FILES = { "index.html", "manifest.json", "sw.js", "icon.svg", "jsqr.js" };
 
     private static final String PREFS = "web_update";
     private static final String KEY_HASH = "content_hash";
