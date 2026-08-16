@@ -417,6 +417,40 @@
     }
     .quote-text { font-size: .92rem; font-weight: 600; line-height: 1.8; color: var(--text); position: relative; }
     .quote-author { font-size: .75rem; color: var(--primary); margin-top: 10px; letter-spacing: 1px; }
+    /* ── Icon button ── */
+    .icon-btn {
+      width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+      background: rgba(255,255,255,.04); border: 1px solid var(--card-border);
+      color: var(--text-light); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    .icon-btn svg { width: 18px; height: 18px; }
+    .icon-btn:active { color: var(--primary); border-color: var(--primary); }
+    /* ── Settings rows ── */
+    .set-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 0; border-bottom: 1px solid var(--border);
+      cursor: pointer; min-width: 0;
+    }
+    .set-row:last-child { border-bottom: none; }
+    .set-icon { font-size: 1.2rem; width: 28px; text-align: center; flex-shrink: 0; }
+    .set-info { flex: 1; min-width: 0; }
+    .set-name { font-size: .88rem; font-weight: 600; }
+    .set-desc { font-size: .72rem; color: var(--text-light); margin-top: 2px; }
+    .set-arrow { color: var(--text-light); font-size: .9rem; flex-shrink: 0; }
+    .set-row.danger .set-name { color: var(--danger); }
+    /* ── Weekly bars ── */
+    .week-chart { display: flex; align-items: flex-end; gap: 6px; height: 90px; margin-top: 4px; }
+    .week-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; height: 100%; justify-content: flex-end; }
+    .week-bar {
+      width: 100%; border-radius: 4px 4px 0 0; min-height: 3px;
+      background: linear-gradient(180deg, var(--primary), var(--secondary));
+      transition: height .5s;
+    }
+    .week-bar.empty { background: rgba(255,255,255,.06); }
+    .week-day { font-size: .62rem; color: var(--text-light); font-weight: 600; }
+    .week-day.today-label { color: var(--primary); }
   </style>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -773,7 +807,9 @@
       <div class="app-title">🌟 我的生活助手</div>
       <div class="header-date" id="headerDate"></div>
     </div>
-    <div id="headerWeather" style="font-size:1.8rem"></div>
+    <button class="icon-btn" onclick="openSettings()" title="設定">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
   </div>
   <div class="header-greeting" id="headerGreeting"></div>
   <div class="header-time" id="headerTime"></div>
@@ -832,9 +868,69 @@
       </div>
     </div>
 
+    <p class="section-label">本週習慣完成度</p>
+    <div class="card">
+      <div class="week-chart" id="weekChart"></div>
+    </div>
+
     <p class="section-label">近期待辦</p>
     <div class="card" id="dash-todos">
       <div class="empty"><div class="empty-icon">📋</div>無待辦事項</div>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div class="page" id="page-settings">
+    <p class="section-label">資料備份</p>
+    <div class="card">
+      <div class="set-row" onclick="exportData()">
+        <div class="set-icon">📤</div>
+        <div class="set-info">
+          <div class="set-name">匯出備份檔</div>
+          <div class="set-desc">下載所有資料，換手機或清快取前先存一份</div>
+        </div>
+        <div class="set-arrow">›</div>
+      </div>
+      <div class="set-row" onclick="document.getElementById('importFile').click()">
+        <div class="set-icon">📥</div>
+        <div class="set-info">
+          <div class="set-name">匯入備份檔</div>
+          <div class="set-desc">從備份檔還原資料（會覆蓋現有資料）</div>
+        </div>
+        <div class="set-arrow">›</div>
+      </div>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
+    </div>
+
+    <p class="section-label">通知</p>
+    <div class="card">
+      <div class="set-row" onclick="askNotify()">
+        <div class="set-icon">🔔</div>
+        <div class="set-info">
+          <div class="set-name">開啟番茄鐘通知</div>
+          <div class="set-desc" id="notifyStatus">計時結束時通知你</div>
+        </div>
+        <div class="set-arrow">›</div>
+      </div>
+    </div>
+
+    <p class="section-label">資料統計</p>
+    <div class="card" id="dataStats"></div>
+
+    <p class="section-label">危險操作</p>
+    <div class="card">
+      <div class="set-row danger" onclick="clearAllData()">
+        <div class="set-icon">🗑️</div>
+        <div class="set-info">
+          <div class="set-name">清除所有資料</div>
+          <div class="set-desc">無法復原，請先匯出備份</div>
+        </div>
+        <div class="set-arrow">›</div>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:20px 0;color:var(--text-light);font-size:.72rem;letter-spacing:1px">
+      我的生活助手 · 資料只存在這台裝置
     </div>
   </div>
 
@@ -1081,9 +1177,6 @@ function updateClock() {
     `${now.getFullYear()} 年 ${months[now.getMonth()]} 月 ${now.getDate()} 日　星期${weekDays[now.getDay()]}`;
   const greeting = h<5?'夜深了 🌙':h<12?'早安 ☀️':h<14?'午安 🌤':h<18?'下午好 🌈':'晚安 🌙';
   document.getElementById('headerGreeting').textContent = greeting;
-  const weathers = ['☀️','⛅','🌤','🌥','☁️'];
-  if(!document.getElementById('headerWeather').textContent)
-    document.getElementById('headerWeather').textContent = weathers[Math.floor(Math.random()*weathers.length)];
 }
 updateClock();
 setInterval(updateClock, 30000);
@@ -1093,9 +1186,15 @@ function showPage(name, btn) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  btn.classList.add('active');
+  if(btn) btn.classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
   if(name==='dashboard') refreshDashboard();
+}
+
+function openSettings() {
+  showPage('settings');
+  renderDataStats();
+  updateNotifyStatus();
 }
 
 // ─── Mood ─────────────────────────────────────────────────────────────
@@ -1382,6 +1481,8 @@ function refreshDashboard() {
   document.getElementById('stat-budget').textContent=`$${Math.abs(balance).toLocaleString()}`;
   document.getElementById('prog-budget').style.width=income?Math.min(Math.max(balance/income*100,0),100)+'%':'0%';
 
+  renderWeekChart();
+
   // Recent todos
   const recent=todos.filter(t=>!t.done).slice(0,4);
   const dashTodos=document.getElementById('dash-todos');
@@ -1424,9 +1525,21 @@ function loadQuote() {
 loadQuote();
 
 // ─── Pomodoro ─────────────────────────────────────────────────────────
+// 用時間戳計算剩餘秒數，手機鎖屏 / 切到背景後回來仍然準確
 let pomoFocusMin=25, pomoRestMin=5;
-let pomoSeconds=25*60, pomoRunning=false, pomoPhase='focus', pomoTimer=null, pomoSession=0;
-const CIRC = 2*Math.PI*80; // circumference
+let pomoSeconds=25*60, pomoRunning=false, pomoPhase='focus', pomoTimer=null;
+let pomoEndAt=0;                       // 目前這段結束的時間戳
+const CIRC = 2*Math.PI*80;             // 圓周長
+
+function pomoTodayCount() {
+  return (S.get('pomodoros',{}))[todayKey()] || 0;
+}
+function bumpPomoCount() {
+  const data=S.get('pomodoros',{});
+  const td=todayKey();
+  data[td]=(data[td]||0)+1;
+  S.set('pomodoros',data);
+}
 
 function setPomoMode(f,r) {
   pomoReset();
@@ -1442,49 +1555,76 @@ function setPomoMode(f,r) {
 }
 
 function pomoStart() {
-  if(pomoRunning) {
-    pomoRunning=false; clearInterval(pomoTimer);
-    document.getElementById('pomoBtnStart').textContent='▶ 繼續';
-    document.getElementById('pomoBtnStart').className='pomo-btn start';
-    return;
-  }
+  if(pomoRunning) { pomoPause(); return; }
   pomoRunning=true;
-  document.getElementById('pomoBtnStart').textContent='⏸ 暫停';
-  document.getElementById('pomoBtnStart').className='pomo-btn pause';
-  pomoTimer=setInterval(()=>{
-    pomoSeconds--;
-    renderPomoTime();
-    if(pomoSeconds<=0) {
-      clearInterval(pomoTimer); pomoRunning=false;
-      if(pomoPhase==='focus') {
-        pomoSession++;
-        pomoPhase='rest';
-        pomoSeconds=pomoRestMin*60;
-        document.getElementById('pomoRing').className='pomo-ring rest';
-        document.getElementById('pomoBtnStart').textContent='▶ 開始休息';
-        document.getElementById('pomoBtnStart').className='pomo-btn start';
-        try{ new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAA...').play(); }catch(e){}
-        renderPomoSessions();
-        alert(`✅ 專注完成！休息 ${pomoRestMin} 分鐘 🎉`);
-      } else {
-        pomoPhase='focus';
-        pomoSeconds=pomoFocusMin*60;
-        document.getElementById('pomoRing').className='pomo-ring focus';
-        document.getElementById('pomoBtnStart').textContent='▶ 開始專注';
-        document.getElementById('pomoBtnStart').className='pomo-btn start';
-        alert(`😌 休息結束！再來一個番茄鐘？`);
-      }
-      renderPomoTime();
+  pomoEndAt=Date.now()+pomoSeconds*1000;
+  const btn=document.getElementById('pomoBtnStart');
+  btn.textContent='⏸ 暫停';
+  btn.className='pomo-btn pause';
+  clearInterval(pomoTimer);
+  pomoTimer=setInterval(pomoTick,250);
+  pomoTick();
+}
+
+function pomoPause() {
+  pomoRunning=false;
+  clearInterval(pomoTimer);
+  pomoSeconds=Math.max(0,Math.round((pomoEndAt-Date.now())/1000));
+  const btn=document.getElementById('pomoBtnStart');
+  btn.textContent='▶ 繼續';
+  btn.className='pomo-btn start';
+  renderPomoTime();
+}
+
+function pomoTick() {
+  if(!pomoRunning) return;
+  pomoSeconds=Math.max(0,Math.round((pomoEndAt-Date.now())/1000));
+  renderPomoTime();
+  if(pomoSeconds>0) return;
+
+  // 這一段結束
+  clearInterval(pomoTimer);
+  pomoRunning=false;
+  const btn=document.getElementById('pomoBtnStart');
+  if(pomoPhase==='focus') {
+    bumpPomoCount();
+    pomoPhase='rest';
+    pomoSeconds=pomoRestMin*60;
+    document.getElementById('pomoRing').className='pomo-ring rest';
+    btn.textContent='▶ 開始休息';
+    btn.className='pomo-btn start';
+    renderPomoSessions();
+    pomoNotify('🍅 專注完成！',`休息 ${pomoRestMin} 分鐘吧`);
+  } else {
+    pomoPhase='focus';
+    pomoSeconds=pomoFocusMin*60;
+    document.getElementById('pomoRing').className='pomo-ring focus';
+    btn.textContent='▶ 開始專注';
+    btn.className='pomo-btn start';
+    pomoNotify('😌 休息結束','再來一個番茄鐘？');
+  }
+  renderPomoTime();
+}
+
+// 震動 + 系統通知（沒權限就退回 alert）
+function pomoNotify(title, body) {
+  try { if(navigator.vibrate) navigator.vibrate([200,100,200]); } catch(e){}
+  try {
+    if(window.Notification && Notification.permission==='granted') {
+      new Notification(title,{body,icon:'icon.svg'});
+      return;
     }
-  },1000);
+  } catch(e){}
+  setTimeout(()=>alert(`${title}\n${body}`),50);
 }
 
 function pomoReset() {
   clearInterval(pomoTimer); pomoRunning=false;
   pomoSeconds=pomoFocusMin*60; pomoPhase='focus';
   document.getElementById('pomoRing').className='pomo-ring focus';
-  document.getElementById('pomoBtnStart').textContent='▶ 開始';
-  document.getElementById('pomoBtnStart').className='pomo-btn start';
+  const btn=document.getElementById('pomoBtnStart');
+  btn.textContent='▶ 開始';
+  btn.className='pomo-btn start';
   renderPomoTime();
 }
 
@@ -1493,18 +1633,125 @@ function renderPomoTime() {
   document.getElementById('pomoTime').textContent=
     `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   const total=(pomoPhase==='focus'?pomoFocusMin:pomoRestMin)*60;
-  const pct=pomoSeconds/total;
-  document.getElementById('pomoArc').style.strokeDashoffset=CIRC*pct;
-  document.getElementById('pomoLabel').textContent=pomoPhase==='focus'?'專注中 🍅':'休息中 😌';
+  document.getElementById('pomoArc').style.strokeDashoffset=CIRC*(pomoSeconds/total);
+  document.getElementById('pomoLabel').textContent=
+    pomoRunning ? (pomoPhase==='focus'?'專注中 🍅':'休息中 😌')
+                : (pomoPhase==='focus'?'準備專注':'準備休息');
 }
 
 function renderPomoSessions() {
+  const n=pomoTodayCount();
   const dots=document.getElementById('pomoSessions');
-  dots.innerHTML=Array.from({length:Math.min(pomoSession+1,8)},(_,i)=>
-    `<div class="pomo-dot${i<pomoSession?' done':''}"></div>`
-  ).join('');
+  dots.innerHTML=Array.from({length:Math.max(n+1,4)},(_,i)=>
+    `<div class="pomo-dot${i<n?' done':''}"></div>`
+  ).join('') + `<span style="font-size:.7rem;color:var(--text-light);margin-left:6px">今日 ${n} 個</span>`;
 }
+
+// 從背景切回來時立刻補算，不等下一個 tick
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) pomoTick(); });
+
 renderPomoTime(); renderPomoSessions();
+
+// ─── 本週習慣圖表 ─────────────────────────────────────────────────────
+function renderWeekChart() {
+  const habits=S.get('habits',[]);
+  const days=last7Days();
+  const td=todayKey();
+  const labels=['日','一','二','三','四','五','六'];
+  document.getElementById('weekChart').innerHTML=days.map(d=>{
+    const total=habits.length;
+    const done=habits.filter(h=>h.records[d]).length;
+    const pct=total?done/total:0;
+    const dow=labels[new Date(d).getDay()];
+    return `<div class="week-col">
+      <div class="week-bar${pct===0?' empty':''}" style="height:${Math.max(pct*100,3)}%"></div>
+      <div class="week-day${d===td?' today-label':''}">${dow}</div>
+    </div>`;
+  }).join('');
+}
+
+// ─── 設定：備份 / 還原 / 通知 / 清除 ──────────────────────────────────
+const DATA_KEYS=['todos','habits','notes','budget','water','moods','challenges','reflects','pomodoros'];
+
+function exportData() {
+  const dump={ _app:'我的生活助手', _version:1, _exportedAt:new Date().toISOString() };
+  DATA_KEYS.forEach(k=>{ dump[k]=S.get(k,null); });
+  const blob=new Blob([JSON.stringify(dump,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`生活助手備份_${todayKey()}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+function importData(input) {
+  const file=input.files && input.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    let data;
+    try { data=JSON.parse(reader.result); }
+    catch(e){ alert('❌ 檔案格式不正確，請選擇匯出的備份檔'); input.value=''; return; }
+    if(!data || data._app!=='我的生活助手') {
+      if(!confirm('這個檔案不像是本 App 的備份檔，仍要匯入嗎？')) { input.value=''; return; }
+    }
+    if(!confirm('匯入會覆蓋目前所有資料，確定嗎？')) { input.value=''; return; }
+    DATA_KEYS.forEach(k=>{ if(data[k]!=null) S.set(k,data[k]); });
+    input.value='';
+    alert('✅ 匯入完成！');
+    location.reload();
+  };
+  reader.readAsText(file);
+}
+
+function askNotify() {
+  if(!window.Notification) { alert('這個瀏覽器不支援通知功能'); return; }
+  if(Notification.permission==='granted') { alert('通知已經開啟了 ✅'); return; }
+  if(Notification.permission==='denied') {
+    alert('通知已被封鎖，請到瀏覽器設定中重新允許本網站的通知');
+    return;
+  }
+  Notification.requestPermission().then(()=>updateNotifyStatus());
+}
+
+function updateNotifyStatus() {
+  const el=document.getElementById('notifyStatus');
+  if(!el) return;
+  if(!window.Notification) { el.textContent='此瀏覽器不支援通知'; return; }
+  el.textContent =
+    Notification.permission==='granted' ? '已開啟 ✅' :
+    Notification.permission==='denied'  ? '已封鎖，請到瀏覽器設定開啟' :
+    '點擊開啟，計時結束時通知你';
+}
+
+function renderDataStats() {
+  const el=document.getElementById('dataStats');
+  if(!el) return;
+  const rows=[
+    ['✅','待辦事項',S.get('todos',[]).length+' 筆'],
+    ['🔥','習慣',S.get('habits',[]).length+' 個'],
+    ['🏆','挑戰',S.get('challenges',[]).length+' 個'],
+    ['📝','筆記',S.get('notes',[]).length+' 則'],
+    ['💰','記帳',S.get('budget',[]).length+' 筆'],
+    ['🌙','反思',S.get('reflects',[]).length+' 天'],
+    ['🍅','今日番茄鐘',pomoTodayCount()+' 個'],
+  ];
+  el.innerHTML=rows.map(([icon,name,val])=>`
+    <div class="set-row" style="cursor:default">
+      <div class="set-icon">${icon}</div>
+      <div class="set-info"><div class="set-name">${name}</div></div>
+      <div class="text-sm">${val}</div>
+    </div>`).join('');
+}
+
+function clearAllData() {
+  if(!confirm('⚠️ 這會刪除所有資料且無法復原。\n\n建議先「匯出備份檔」。\n\n確定要清除嗎？')) return;
+  if(!confirm('再確認一次：真的要刪除全部資料嗎？')) return;
+  DATA_KEYS.forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+  alert('已清除所有資料');
+  location.reload();
+}
 
 // ─── Challenge Tracker ────────────────────────────────────────────────
 function addChallenge() {
