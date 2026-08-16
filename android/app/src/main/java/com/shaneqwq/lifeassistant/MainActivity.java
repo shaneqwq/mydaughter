@@ -95,10 +95,15 @@ public class MainActivity extends AppCompatActivity {
 
         // 開啟時在背景靜靜檢查更新；沒網路就當作沒發生
         WebUpdater.checkInBackground(this, new WebUpdater.Callback() {
-            @Override public void onResult(final String message, final boolean updated) {
+            @Override public void onResult(String message, final boolean updated) {
                 runOnUiThread(new Runnable() {
                     @Override public void run() {
-                        if (updated) Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
+                        if (!updated || web == null) return;
+                        // 直接套用，不要等下次開啟。
+                        // 使用者資料都在 localStorage，重新載入不會遺失；
+                        // 若延到下次啟動，畫面看起來會像是沒更新。
+                        web.loadUrl(UPDATED);
+                        Toast.makeText(MainActivity.this, "已更新到最新版", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -120,6 +125,11 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override public void run() {
                             if (web == null) return;
+                            if (updated) {
+                                web.loadUrl(UPDATED);       // 立即套用
+                                Toast.makeText(MainActivity.this, "已更新到最新版", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
                             String js = "window.__updateStatus && window.__updateStatus("
                                     + jsString(message) + "," + updated + ")";
                             web.evaluateJavascript(js, null);

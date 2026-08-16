@@ -2323,17 +2323,27 @@ function checkAppUpdate() {
 // 由原生層在檢查完成後回呼
 window.__updateStatus = function (message, updated) {
   const el = document.getElementById('updateStatus');
-  if (el) el.textContent = message;
+  if (!el) return;
+  el.textContent = message + '　內容 ' + CONTENT_VERSION;
   if (updated) el.style.color = 'var(--success)';
 };
 
+// 內容版本：每次改動網頁時一併更新，方便確認手機上跑的是哪一版
+const CONTENT_VERSION = '2026-08-16c';
+
 function initUpdateSection() {
-  if (!isNativeApp()) return;
+  const el = document.getElementById('updateStatus');
+  if (!isNativeApp()) {
+    // 網頁版也顯示，方便對照
+    const sec = document.getElementById('updateSection');
+    if (sec) sec.style.display = '';
+    if (el) el.textContent = '網頁版　內容 ' + CONTENT_VERSION;
+    return;
+  }
   const sec = document.getElementById('updateSection');
   if (sec) sec.style.display = '';
-  const el = document.getElementById('updateStatus');
   try {
-    if (el) el.textContent = '目前版本 ' + window.AppHost.appVersion() + '，開啟時會自動檢查';
+    if (el) el.textContent = 'App ' + window.AppHost.appVersion() + '　內容 ' + CONTENT_VERSION;
   } catch (e) {}
 }
 initUpdateSection();
