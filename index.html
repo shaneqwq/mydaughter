@@ -214,7 +214,7 @@
     .todo-check.done::after { content: '✓'; color: #fff; font-size: .68rem; font-weight: 700; }
     .todo-text {
       flex: 1; font-size: .875rem; line-height: 1.45; min-width: 0;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      word-break: break-word;          /* 長內容換行顯示，不再截斷看不到 */
     }
     .todo-text.done { color: var(--faint); text-decoration: line-through; }
     .todo-tag {
@@ -246,7 +246,7 @@
       border-radius: 11px; box-shadow: var(--lift-sm);
     }
     .habit-info { flex: 1; min-width: 0; }
-    .habit-name { font-size: .875rem; font-weight: 550; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .habit-name { font-size: .875rem; font-weight: 550; word-break: break-word; }
     .habit-streak { font-size: .72rem; color: var(--warning); margin-top: 2px; font-weight: 500; }
     .habit-dots { display: flex; gap: 3px; margin-top: 7px; }
     .habit-dot {
@@ -289,6 +289,24 @@
     .note-card .del-btn { position: absolute; top: 11px; right: 11px; }
 
     /* ── Budget ── */
+    .month-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px; margin-bottom: 10px;
+    }
+    .month-label {
+      font-size: .92rem; font-weight: 600; color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+    .month-btn {
+      width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+      border: 1px solid var(--line); background: var(--glass-2);
+      box-shadow: var(--lift-sm), var(--gloss);
+      color: var(--muted); font-size: 1.15rem; font-family: inherit;
+      cursor: pointer; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .month-btn:active { background: #fff; color: var(--text); }
+    .month-btn:disabled { opacity: .35; cursor: default; }
     .budget-summary { display: flex; gap: 9px; margin-bottom: 11px; }
     .budget-box {
       flex: 1; border-radius: var(--radius); padding: 14px 10px; text-align: center;
@@ -321,7 +339,7 @@
       border-radius: 11px; box-shadow: var(--lift-sm);
     }
     .budget-item-info { flex: 1; min-width: 0; }
-    .budget-item-desc { font-size: .865rem; font-weight: 550; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .budget-item-desc { font-size: .865rem; font-weight: 550; word-break: break-word; }
     .budget-item-date { font-size: .715rem; color: var(--subtle); margin-top: 1px; }
     .budget-item-amount {
       font-size: .875rem; font-weight: 600; flex-shrink: 0;
@@ -438,6 +456,7 @@
     }
     .challenge-cell.done { background: linear-gradient(135deg, var(--primary-deep), #a855f7); }
     .challenge-cell.today { outline: 1.5px solid var(--primary); outline-offset: 1.5px; }
+    .challenge-cell.future { opacity: .4; cursor: default; }
 
     /* ── Reflect ── */
     .reflect-block { margin-bottom: 15px; }
@@ -693,7 +712,7 @@
       font-variant-numeric: tabular-nums;
     }
     .item-info { flex: 1; min-width: 0; }
-    .item-name { font-size: .875rem; font-weight: 550; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .item-name { font-size: .875rem; font-weight: 550; word-break: break-word; }
     .item-meta { font-size: .715rem; color: var(--subtle); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .item-meta .warn { color: var(--danger); font-weight: 600; }
     .item-meta .soon { color: var(--warning); font-weight: 600; }
@@ -844,7 +863,7 @@
       <div class="stat-card">
         <div class="stat-icon"><svg class="ic"><use href="#i-check"/></svg></div>
         <div class="stat-value" id="stat-todo">0</div>
-        <div class="stat-label">待辦完成率</div>
+        <div class="stat-label">今日完成待辦</div>
         <div class="progress-bar mt-8"><div class="progress-fill" id="prog-todo" style="width:0%"></div></div>
       </div>
       <div class="stat-card">
@@ -1020,6 +1039,11 @@
 
   <!-- Budget -->
   <div class="page" id="page-budget">
+    <div class="month-nav">
+      <button class="month-btn" onclick="shiftBudgetMonth(-1)" aria-label="上個月">‹</button>
+      <div class="month-label" id="budgetMonthLabel"></div>
+      <button class="month-btn" id="monthNext" onclick="shiftBudgetMonth(1)" aria-label="下個月">›</button>
+    </div>
     <div class="budget-summary">
       <div class="budget-box income">
         <div class="budget-box-label">收入</div>
@@ -1054,7 +1078,7 @@
         <button class="btn-full" onclick="addBudget()">新增記錄</button>
       </div>
     </div>
-    <p class="section-label">本月記錄</p>
+    <p class="section-label" id="budgetListLabel">本月記錄</p>
     <div class="card" id="budgetList">
       <div class="empty"><div class="empty-icon"><svg class="ic"><use href="#i-wallet"/></svg></div>尚無記帳記錄</div>
     </div>
@@ -1181,31 +1205,31 @@
 
 <!-- Bottom nav -->
 <nav class="bottom-nav">
-  <button class="nav-btn active" onclick="showPage('dashboard',this)">
+  <button class="nav-btn active" data-page="dashboard" onclick="showPage('dashboard',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
     總覽
   </button>
-  <button class="nav-btn" onclick="showPage('todo',this)">
+  <button class="nav-btn" data-page="todo" onclick="showPage('todo',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
     待辦
   </button>
-  <button class="nav-btn" onclick="showPage('habit',this)">
+  <button class="nav-btn" data-page="habit" onclick="showPage('habit',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
     習慣
   </button>
-  <button class="nav-btn" onclick="showPage('notes',this)">
+  <button class="nav-btn" data-page="notes" onclick="showPage('notes',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
     筆記
   </button>
-  <button class="nav-btn" onclick="showPage('budget',this)">
+  <button class="nav-btn" data-page="budget" onclick="showPage('budget',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 1 0 7H6"/></svg>
     記帳
   </button>
-  <button class="nav-btn" onclick="showPage('items',this);renderItems()">
+  <button class="nav-btn" data-page="items" onclick="showPage('items',this);renderItems()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
     物品
   </button>
-  <button class="nav-btn" onclick="showPage('discipline',this)">
+  <button class="nav-btn" data-page="discipline" onclick="showPage('discipline',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
     自律
   </button>
@@ -1275,6 +1299,13 @@ function showPage(name, btn) {
   window.scrollTo({top:0,behavior:'smooth'});
   if(name==='dashboard') refreshDashboard();
 }
+
+// 依頁面名稱取得對應的導覽按鈕。
+// 先前是寫死索引，新增分頁後就對不上了（物品頁會 highlight 到自律）。
+function navBtnFor(name) {
+  return document.querySelector(`.nav-btn[data-page="${name}"]`);
+}
+function goPage(name) { showPage(name, navBtnFor(name)); }
 
 function openSettings() {
   showPage('settings');
@@ -1363,7 +1394,7 @@ document.getElementById('todoInput').addEventListener('keydown',e=>{ if(e.key===
 function toggleTodo(id) {
   const todos=S.get('todos',[]);
   const t=todos.find(x=>x.id===id);
-  if(t) t.done=!t.done;
+  if(t) { t.done=!t.done; t.doneAt = t.done ? Date.now() : null; }
   S.set('todos',todos);
   renderTodos();
   refreshDashboard();
@@ -1422,17 +1453,20 @@ function toggleHabitDay(id) {
   refreshDashboard();
 }
 function deleteHabit(id) {
+  const h=S.get('habits',[]).find(x=>x.id===id);
+  const days=h?Object.values(h.records).filter(Boolean).length:0;
+  if(!confirm(days ? `刪除「${h.name}」？已累積的 ${days} 天紀錄會一起消失。` : '刪除這個習慣？')) return;
   const habits=S.get('habits',[]).filter(x=>x.id!==id);
   S.set('habits',habits);
   renderHabits();
 }
+// 今天還沒打卡不代表斷了 —— 這一天還沒過完，所以從昨天起算
 function habitStreak(records) {
-  let streak=0, d=new Date();
-  while(true){
-    const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    if(records[k]) { streak++; d.setDate(d.getDate()-1); }
-    else break;
-  }
+  const key = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  let d = new Date();
+  if (!records[key(d)]) d.setDate(d.getDate()-1);   // 今天未打卡，往前一天開始算
+  let streak = 0;
+  while (records[key(d)]) { streak++; d.setDate(d.getDate()-1); }
   return streak;
 }
 function renderHabits() {
@@ -1470,6 +1504,7 @@ function addNote() {
   renderNotes();
 }
 function deleteNote(id) {
+  if(!confirm('刪除這則筆記？')) return;
   const notes=S.get('notes',[]).filter(x=>x.id!==id);
   S.set('notes',notes);
   renderNotes();
@@ -1525,26 +1560,55 @@ function addBudget() {
   S.set('budget',records);
   document.getElementById('budgetAmount').value='';
   document.getElementById('budgetDesc').value='';
+  budgetMonth = monthKey();          // 跳回當月，否則剛新增的看不到
   renderBudget();
   refreshDashboard();
 }
 function deleteBudget(id) {
+  if(!confirm('刪除這筆記錄？')) return;
   const records=S.get('budget',[]).filter(x=>x.id!==id);
   S.set('budget',records);
   renderBudget();
   refreshDashboard();
 }
+// 金額格式：負號放在錢字號前面，不然會變成 $-100
+function money(n) {
+  const v = Math.abs(n).toLocaleString();
+  return (n < 0 ? '-$' : '$') + v;
+}
+
+// 目前檢視的月份，可往前翻，但不能翻到未來
+let budgetMonth = monthKey();
+
+function shiftBudgetMonth(delta) {
+  const [y,m] = budgetMonth.split('-').map(Number);
+  const d = new Date(y, m-1+delta, 1);
+  const next = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  if (next > monthKey()) return;
+  budgetMonth = next;
+  renderBudget();
+}
+
 function renderBudget() {
-  const mk=monthKey();
+  const mk=budgetMonth;
+  const lbl=document.getElementById('budgetMonthLabel');
+  if(lbl){
+    const [y,m]=mk.split('-');
+    lbl.textContent = `${y} 年 ${Number(m)} 月` + (mk===monthKey() ? '（本月）' : '');
+  }
+  const nextBtn=document.getElementById('monthNext');
+  if(nextBtn) nextBtn.disabled = (mk === monthKey());
+  const listLbl=document.getElementById('budgetListLabel');
+  if(listLbl) listLbl.textContent = (mk===monthKey() ? '本月記錄' : `${Number(mk.split('-')[1])} 月記錄`);
   const records=S.get('budget',[]).filter(r=>r.month===mk);
   let income=0,expense=0;
   records.forEach(r=>{ if(r.type==='income') income+=r.amount; else expense+=r.amount; });
   const balance=income-expense;
-  document.getElementById('budgetIncome').textContent=`$${income.toLocaleString()}`;
-  document.getElementById('budgetExpense').textContent=`$${expense.toLocaleString()}`;
-  document.getElementById('budgetBalance').textContent=`$${balance.toLocaleString()}`;
+  document.getElementById('budgetIncome').textContent=money(income);
+  document.getElementById('budgetExpense').textContent=money(expense);
+  document.getElementById('budgetBalance').textContent=money(balance);
   const list=document.getElementById('budgetList');
-  if(!records.length){ list.innerHTML='<div class="empty"><div class="empty-icon"><svg class="ic"><use href="#i-wallet"/></svg></div>尚無記帳記錄</div>'; return; }
+  if(!records.length){ list.innerHTML='<div class="empty"><div class="empty-icon"><svg class="ic"><use href="#i-wallet"/></svg></div>這個月還沒有記錄</div>'; return; }
   list.innerHTML=records.map(r=>`
     <div class="budget-item">
       <div class="budget-cat-icon">${catIcon(r.cat)}</div>
@@ -1560,12 +1624,15 @@ renderBudget();
 
 // ─── Dashboard refresh ────────────────────────────────────────────────
 function refreshDashboard() {
-  // Todos
+  // 待辦：只看「今天的工作量」——未完成的，加上今天完成的。
+  // 原本用歷史全部的完成率，累積越久越接近 100%，看不出當下狀況。
   const todos=S.get('todos',[]);
-  const done=todos.filter(t=>t.done).length;
-  const total=todos.length;
-  const pct=total?Math.round(done/total*100):0;
-  document.getElementById('stat-todo').textContent=`${pct}%`;
+  const td0=new Date(); td0.setHours(0,0,0,0);
+  const doneToday=todos.filter(t=>t.done && t.doneAt && t.doneAt>=td0.getTime()).length;
+  const pending=todos.filter(t=>!t.done).length;
+  const workload=doneToday+pending;
+  const pct=workload?Math.round(doneToday/workload*100):0;
+  document.getElementById('stat-todo').textContent=`${doneToday}/${workload}`;
   document.getElementById('prog-todo').style.width=pct+'%';
 
   // Habits
@@ -1588,7 +1655,7 @@ function refreshDashboard() {
   let income=0,expense=0;
   records.forEach(r=>{ if(r.type==='income') income+=r.amount; else expense+=r.amount; });
   const balance=income-expense;
-  document.getElementById('stat-budget').textContent=`$${Math.abs(balance).toLocaleString()}`;
+  document.getElementById('stat-budget').textContent=money(balance);
   document.getElementById('prog-budget').style.width=income?Math.min(Math.max(balance/income*100,0),100)+'%':'0%';
 
   renderWeekChart();
@@ -2077,8 +2144,9 @@ function saveInvoice() {
   S.set('budget', records);
   pendingInvoice = null;
   closeSheet();
+  budgetMonth = inv.month;           // 切到該發票所屬的月份
   renderBudget(); refreshDashboard();
-  showPage('budget', document.querySelectorAll('.nav-btn')[4]);
+  goPage('budget');
 }
 
 // ─── 條碼 → 物品 ──────────────────────────────────────────────────────
@@ -2160,13 +2228,13 @@ function saveScanAsNote() {
   S.set('notes', notes);
   closeSheet();
   renderNotes();
-  showPage('notes', document.querySelectorAll('.nav-btn')[3]);
+  goPage('notes');
 }
 
 // ─── 物品清單 ─────────────────────────────────────────────────────────
 function gotoItems() {
   renderItems();
-  showPage('items', document.querySelectorAll('.nav-btn')[6]);
+  goPage('items');
 }
 
 function addItem() {
@@ -2190,6 +2258,7 @@ function bumpItemQty(id, delta) {
 }
 
 function deleteItem(id) {
+  if(!confirm('從清單移除這個物品？')) return;
   S.set('items', S.get('items', []).filter(x => x.id !== id));
   renderItems();
 }
@@ -2290,17 +2359,22 @@ function addChallenge() {
 }
 document.getElementById('chalName').addEventListener('keydown',e=>{ if(e.key==='Enter') addChallenge(); });
 
-function toggleChalDay(id) {
+// 可以補打過去漏掉的日子，但不能先打未來的
+function toggleChalDay(id, dayKey) {
   const chals=S.get('challenges',[]);
   const c=chals.find(x=>x.id===id);
   if(!c) return;
-  const td=todayKey();
-  c.records[td]=!c.records[td];
+  const k = dayKey || todayKey();
+  if (k > todayKey()) return;
+  if (c.records[k]) delete c.records[k]; else c.records[k]=true;
   S.set('challenges',chals);
   renderChallenges();
 }
 
 function deleteChallenge(id) {
+  const c=S.get('challenges',[]).find(x=>x.id===id);
+  const days=c?Object.values(c.records).filter(Boolean).length:0;
+  if(!confirm(days ? `放棄「${c.name}」？已完成的 ${days} 天會一起消失。` : '刪除這個挑戰？')) return;
   S.set('challenges',S.get('challenges',[]).filter(x=>x.id!==id));
   renderChallenges();
 }
@@ -2319,7 +2393,9 @@ function renderChallenges() {
       const d=new Date(startMs+i*86400000);
       const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
       const isToday=k===td;
-      return `<div class="challenge-cell${c.records[k]?' done':''}${isToday?' today':''}" onclick="toggleChalDay(${c.id})" title="${k}"></div>`;
+      const future = k > td;
+      return `<div class="challenge-cell${c.records[k]?' done':''}${isToday?' today':''}${future?' future':''}"
+        ${future?'':`onclick="toggleChalDay(${c.id},'${k}')"`} title="${k}"></div>`;
     }).join('');
     return `<div class="challenge-item">
       <div class="challenge-header">
@@ -2356,6 +2432,7 @@ function saveReflect() {
 }
 
 function deleteReflect(id) {
+  if(!confirm('刪除這天的反思？')) return;
   S.set('reflects',S.get('reflects',[]).filter(x=>x.id!==id));
   renderReflects();
 }
