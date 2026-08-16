@@ -1,8 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="114" fill="#131316"/>
-  <rect x="1" y="1" width="510" height="510" rx="113" fill="none" stroke="#2b2b33" stroke-width="2"/>
-  <!-- checkmark -->
-  <path d="M150 262 L222 334 L362 178"
-        fill="none" stroke="#6366f1" stroke-width="42"
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#1b1b34"/>
+      <stop offset="100%" stop-color="#0a0a14"/>
+    </linearGradient>
+    <linearGradient id="mark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#a5b4fc"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity=".28"/>
+      <stop offset="55%"  stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="114" fill="url(#bg)"/>
+  <!-- 背景光暈 -->
+  <circle cx="120" cy="96"  r="150" fill="#6366f1" opacity=".38"/>
+  <circle cx="410" cy="180" r="130" fill="#c026d3" opacity=".28"/>
+  <circle cx="360" cy="440" r="140" fill="#22d3ee" opacity=".18"/>
+  <!-- 玻璃面板 -->
+  <rect x="96" y="96" width="320" height="320" rx="80"
+        fill="#ffffff" fill-opacity=".10"
+        stroke="#ffffff" stroke-opacity=".22" stroke-width="2"/>
+  <rect x="96" y="96" width="320" height="320" rx="80" fill="url(#edge)"/>
+  <!-- 勾選 -->
+  <path d="M176 258 L232 314 L342 196"
+        fill="none" stroke="url(#mark)" stroke-width="38"
         stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
