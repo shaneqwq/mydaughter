@@ -31,6 +31,11 @@ android {
 }
 
 dependencies {
+    // 相依套件會各自帶進不同版本的 Kotlin stdlib，而 kotlin-stdlib-jdk7/jdk8
+    // 自 1.8 起已併入 kotlin-stdlib，版本不一致就會出現重複類別。
+    // 用 BOM 把所有 kotlin 模組對齊到同一版本。
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.9.24')
+
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.webkit:webkit:1.11.0'
 }
