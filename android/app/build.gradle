@@ -10,8 +10,8 @@ android {
         applicationId "com.shaneqwq.lifeassistant"
         minSdk 26                // 8.0 以上，WebView 才有足夠新的 Chromium
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.1"
     }
 
     buildTypes {
@@ -22,6 +22,10 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+
+    buildFeatures {
+        buildConfig true          // AppHost.appVersion() 會用到 BuildConfig
     }
 
     compileOptions {

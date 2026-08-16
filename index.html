@@ -712,6 +712,8 @@
 
 <symbol id="i-receipt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2.8v18.4l2.3-1.5 2.4 1.5 2.3-1.5 2.4 1.5 2.3-1.5 2.3 1.5V2.8l-2.3 1.5-2.3-1.5-2.4 1.5-2.3-1.5-2.4 1.5z"/><path d="M8.6 9.2h6.8M8.6 13.4h4.6"/></symbol>
 
+<symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 12a8.6 8.6 0 1 1-2.5-6.1"/><path d="M20.9 4.2v5.2h-5.2"/></symbol>
+
 <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.8" cy="10.8" r="7.3"/><path d="M20.5 20.5l-4.5-4.5"/></symbol>
 
 <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8.6 6.4h11.9M8.6 12h11.9M8.6 17.6h11.9"/><circle cx="4.3" cy="6.4" r="1.2"/><circle cx="4.3" cy="12" r="1.2"/><circle cx="4.3" cy="17.6" r="1.2"/></symbol>
@@ -869,6 +871,20 @@
         <div class="set-arrow">›</div>
       </div>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
+    </div>
+
+    <div id="updateSection" style="display:none">
+      <p class="section-label">應用程式更新</p>
+      <div class="card">
+        <div class="set-row" onclick="checkAppUpdate()">
+          <div class="set-icon"><svg class="ic"><use href="#i-refresh"/></svg></div>
+          <div class="set-info">
+            <div class="set-name">檢查更新</div>
+            <div class="set-desc" id="updateStatus">開啟 App 時會自動檢查</div>
+          </div>
+          <div class="set-arrow">›</div>
+        </div>
+      </div>
     </div>
 
     <p class="section-label">通知</p>
@@ -2158,6 +2174,40 @@ function renderItems() {
 }
 renderItems();
 document.getElementById('itemName').addEventListener('keydown', e => { if (e.key === 'Enter') addItem(); });
+
+// ─── App 內容自動更新（只有在 APK 中才有 AppHost）─────────────────────
+function isNativeApp() {
+  try { return !!(window.AppHost && window.AppHost.isApp()); } catch (e) { return false; }
+}
+
+function checkAppUpdate() {
+  const el = document.getElementById('updateStatus');
+  if (!isNativeApp()) {
+    if (el) el.textContent = '網頁版一律載入最新內容，不需手動更新';
+    return;
+  }
+  if (el) el.textContent = '檢查中…';
+  try { window.AppHost.checkUpdate(); }
+  catch (e) { if (el) el.textContent = '檢查失敗'; }
+}
+
+// 由原生層在檢查完成後回呼
+window.__updateStatus = function (message, updated) {
+  const el = document.getElementById('updateStatus');
+  if (el) el.textContent = message;
+  if (updated) el.style.color = 'var(--success)';
+};
+
+function initUpdateSection() {
+  if (!isNativeApp()) return;
+  const sec = document.getElementById('updateSection');
+  if (sec) sec.style.display = '';
+  const el = document.getElementById('updateStatus');
+  try {
+    if (el) el.textContent = '目前版本 ' + window.AppHost.appVersion() + '，開啟時會自動檢查';
+  } catch (e) {}
+}
+initUpdateSection();
 
 function clearAllData() {
   if(!confirm('這會刪除所有資料且無法復原。\n\n建議先「匯出備份檔」。\n\n確定要清除嗎？')) return;
