@@ -1,0 +1,54 @@
+name: 編譯 Android APK
+
+on:
+  push:
+    branches: [main, 'claude/**']
+    paths:
+      - 'index.html'
+      - 'manifest.json'
+      - 'sw.js'
+      - 'icon.svg'
+      - 'android/**'
+      - '.github/workflows/android.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:        # 也可以到 Actions 頁面手動按按鈕重新編譯
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 安裝 JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: 安裝 Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 設定 Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: 編譯 APK
+        working-directory: android
+        run: gradle assembleDebug --no-daemon --stacktrace
+
+      - name: 重新命名檔案
+        run: |
+          mkdir -p out
+          cp android/app/build/outputs/apk/debug/app-debug.apk "out/生活助手.apk"
+          ls -lh out/
+
+      - name: 上傳 APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: 生活助手-APK
+          path: out/*.apk
+          if-no-files-found: error
+          retention-days: 90

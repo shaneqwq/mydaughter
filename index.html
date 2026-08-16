@@ -1867,7 +1867,7 @@ async function openScanner(mode) {
   scanMode = mode || 'auto';
 
   if (!('BarcodeDetector' in window)) {
-    alert('這個瀏覽器不支援掃描功能。\n請改用 Android 版 Chrome 開啟本 App。');
+    alert('這台裝置的系統元件不支援掃描功能。\n\n你仍然可以手動記帳與新增物品。\n若是用網頁版，請改用 Android 版 Chrome 開啟。');
     return;
   }
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {

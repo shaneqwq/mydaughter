@@ -1,0 +1,53 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.shaneqwq.lifeassistant'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.shaneqwq.lifeassistant"
+        minSdk 26                // 8.0 以上，WebView 才有足夠新的 Chromium
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        debug {
+            // 除錯版用 debug 金鑰簽章，可直接側載安裝
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.webkit:webkit:1.11.0'
+}
+
+// ── 把專案根目錄的網頁檔複製進 assets/www ─────────────────────────────
+// 網頁只有一份來源（repo 根目錄），不必在 android/ 底下維護重複檔案
+def webRoot = rootProject.file('..')
+def webAssetsDir = new File(layout.buildDirectory.get().asFile, 'generated/webassets')
+
+tasks.register('copyWebAssets', Copy) {
+    from(webRoot) {
+        include 'index.html', 'manifest.json', 'sw.js', 'icon.svg'
+    }
+    into new File(webAssetsDir, 'www')
+}
+
+android.sourceSets.main.assets.srcDirs += webAssetsDir
+
+// preBuild 是建置流程的第一個任務，掛在這裡可確保檔案早於 mergeAssets 就緒
+tasks.named('preBuild').configure { dependsOn 'copyWebAssets' }
