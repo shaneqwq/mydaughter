@@ -51,7 +51,7 @@ def webAssetsDir = new File(layout.buildDirectory.get().asFile, 'generated/webas
 
 tasks.register('copyWebAssets', Copy) {
     from(webRoot) {
-        include 'index.html', 'manifest.json', 'sw.js', 'icon.svg'
+        include 'index.html', 'manifest.json', 'sw.js', 'icon.svg', 'jsqr.js'
     }
     into new File(webAssetsDir, 'www')
 }

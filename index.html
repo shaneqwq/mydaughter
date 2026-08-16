@@ -964,6 +964,12 @@
       </div>
     </div>
 
+    <p class="section-label">掃描診斷</p>
+    <div class="card">
+      <div id="scanDiag" class="code-box" style="max-height:none">尚未檢查</div>
+      <button class="btn-full" style="margin-top:10px" onclick="runScanDiag()">檢查掃描能力</button>
+    </div>
+
     <p class="section-label">資料統計</p>
     <div class="card" id="dataStats"></div>
 
@@ -1244,6 +1250,7 @@
   </button>
 </nav>
 
+<script src="jsqr.js"></script>
 <script>
 // ─── Service Worker ───────────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
@@ -2007,6 +2014,8 @@ function parseEInvoice(raw) {
 // ─── 掃描器 ───────────────────────────────────────────────────────────
 let scanStream = null, scanTimer = null, scanDetector = null, scanMode = 'auto';
 let scanTrack = null, scanNoHitSince = 0, scanHasTorch = false, scanTorchOn = false;
+// 診斷用：分別記錄原生 API 與備援解碼器的成績
+let scanNativeTried = 0, scanNativeHits = 0, scanFallbackHits = 0;
 
 // 沒有指定的話，WebView 給的是低解析度且不會自動對焦的畫面，
 // 影像一糊就永遠讀不到條碼 —— 這是掃不到最常見的原因。
@@ -2059,8 +2068,9 @@ async function toggleTorch() {
 async function openScanner(mode) {
   scanMode = mode || 'auto';
 
-  if (!('BarcodeDetector' in window)) {
-    alert('這台裝置的系統元件不支援掃描功能。\n\n你仍然可以手動記帳與新增物品。\n若是用網頁版，請改用 Android 版 Chrome 開啟。');
+  // 沒有原生 API 也還有 jsQR 可以解發票 QR，不需要直接放棄
+  if (!('BarcodeDetector' in window) && typeof jsQR !== 'function') {
+    alert('這台裝置無法使用掃描功能。\n\n你仍然可以手動記帳與新增物品。');
     return;
   }
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -2074,13 +2084,19 @@ async function openScanner(mode) {
     ? '將商品條碼對準框內'
     : '將發票 QR 或商品條碼對準框內';
   scanNoHitSince = 0;
+  scanNativeTried = scanNativeHits = scanFallbackHits = 0;
   el.classList.add('on');
 
   try {
-    const supported = await BarcodeDetector.getSupportedFormats();
-    const want = ['qr_code','ean_13','ean_8','upc_a','upc_e','code_128','code_39','itf'];
-    const formats = want.filter(f => supported.includes(f));
-    scanDetector = new BarcodeDetector(formats.length ? { formats } : undefined);
+    scanDetector = null;
+    if ('BarcodeDetector' in window) {
+      try {
+        const supported = await BarcodeDetector.getSupportedFormats();
+        const want = ['qr_code','ean_13','ean_8','upc_a','upc_e','code_128','code_39','itf'];
+        const formats = want.filter(f => supported.includes(f));
+        scanDetector = new BarcodeDetector(formats.length ? { formats } : undefined);
+      } catch (e) { scanDetector = null; }   // 建構失敗就純靠備援
+    }
 
     // 解析度要夠高，發票 QR 很密，預設的 640×480 解不開
     scanStream = await navigator.mediaDevices.getUserMedia({
@@ -2121,11 +2137,44 @@ function closeScanner() {
   document.getElementById('scanner').classList.remove('on');
 }
 
+// 把畫面畫到 canvas 上交給 jsQR 解
+let scanCanvas = null;
+function decodeWithJsQR(video) {
+  if (typeof jsQR !== 'function') return null;
+  const w = video.videoWidth, hgt = video.videoHeight;
+  if (!w || !hgt) return null;
+  // 縮到長邊 800 就夠解，全解析度太慢會掉幀
+  const scale = Math.min(1, 800 / Math.max(w, hgt));
+  const cw = Math.round(w * scale), ch = Math.round(hgt * scale);
+  if (!scanCanvas) scanCanvas = document.createElement('canvas');
+  if (scanCanvas.width !== cw || scanCanvas.height !== ch) {
+    scanCanvas.width = cw; scanCanvas.height = ch;
+  }
+  const ctx = scanCanvas.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(video, 0, 0, cw, ch);
+  let img;
+  try { img = ctx.getImageData(0, 0, cw, ch); } catch (e) { return null; }
+  const r = jsQR(img.data, cw, ch, { inversionAttempts: 'attemptBoth' });
+  return r && r.data ? r.data : null;
+}
+
 async function scanTick() {
   const v = document.getElementById('scanVideo');
-  if (!scanDetector || !v || v.readyState < 2) return;
-  let codes;
-  try { codes = await scanDetector.detect(v); } catch (e) { return; }
+  if (!v || v.readyState < 2) return;
+
+  let codes = null;
+  if (scanDetector) {
+    try { codes = await scanDetector.detect(v); scanNativeTried++; } catch (e) { codes = null; }
+  }
+  if (codes && codes.length) { scanNativeHits++; }
+
+  // 原生辨識沒結果就自己解一次 QR。
+  // Android 的 BarcodeDetector 在條碼模組缺失時會一直回空陣列，
+  // 不做這層備援就會變成「相機正常但永遠掃不到」。
+  if (!codes || !codes.length) {
+    const text = decodeWithJsQR(v);
+    if (text) { codes = [{ rawValue: text, format: 'qr_code' }]; scanFallbackHits++; }
+  }
 
   if (!codes || !codes.length) {
     // 掃了一陣子還是沒讀到，多半是對不到焦或距離不對
@@ -2411,7 +2460,7 @@ window.__updateStatus = function (message, updated) {
 };
 
 // 內容版本：每次改動網頁時一併更新，方便確認手機上跑的是哪一版
-const CONTENT_VERSION = '2026-08-16d';
+const CONTENT_VERSION = '2026-08-16e';
 
 function initUpdateSection() {
   const el = document.getElementById('updateStatus');
@@ -2429,6 +2478,36 @@ function initUpdateSection() {
   } catch (e) {}
 }
 initUpdateSection();
+
+// ─── 掃描診斷 ─────────────────────────────────────────────────────────
+// 相機正常卻掃不到時，用來判斷是哪一層失效
+async function runScanDiag() {
+  const el = document.getElementById('scanDiag');
+  if (!el) return;
+  const L = [];
+  L.push('原生 BarcodeDetector：' + ('BarcodeDetector' in window ? '存在' : '不存在'));
+  if ('BarcodeDetector' in window) {
+    try {
+      const f = await BarcodeDetector.getSupportedFormats();
+      L.push('  支援格式：' + (f.length ? f.join(', ') : '（空的，等於不能用）'));
+    } catch (e) {
+      L.push('  取得格式失敗：' + e.message);
+    }
+  }
+  L.push('備援解碼器 jsQR：' + (typeof jsQR === 'function' ? '已載入' : '未載入'));
+  L.push('相機 API：' + (navigator.mediaDevices && navigator.mediaDevices.getUserMedia ? '可用' : '不可用'));
+  L.push('安全來源：' + (window.isSecureContext ? '是' : '否（相機會被擋）'));
+  L.push('');
+  if (scanNativeTried) {
+    L.push(`上次掃描：原生嘗試 ${scanNativeTried} 次、成功 ${scanNativeHits} 次；備援成功 ${scanFallbackHits} 次`);
+    if (scanNativeTried > 10 && scanNativeHits === 0 && scanFallbackHits > 0) {
+      L.push('→ 原生辨識沒作用，實際靠備援解碼器在讀');
+    }
+  } else {
+    L.push('上次掃描：尚無紀錄（開一次掃描器再回來看）');
+  }
+  el.textContent = L.join('\n');
+}
 
 function clearAllData() {
   if(!confirm('這會刪除所有資料且無法復原。\n\n建議先「匯出備份檔」。\n\n確定要清除嗎？')) return;
