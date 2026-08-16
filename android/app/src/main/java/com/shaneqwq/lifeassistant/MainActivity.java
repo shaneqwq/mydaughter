@@ -99,11 +99,10 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override public void run() {
                         if (!updated || web == null) return;
-                        // 直接套用，不要等下次開啟。
-                        // 使用者資料都在 localStorage，重新載入不會遺失；
-                        // 若延到下次啟動，畫面看起來會像是沒更新。
-                        web.loadUrl(UPDATED);
-                        Toast.makeText(MainActivity.this, "已更新到最新版", Toast.LENGTH_SHORT).show();
+                        // 直接套用，不要等下次開啟；資料都在 localStorage，
+                        // 重新載入不會遺失。但使用者正在掃描或有面板開著時，
+                        // 重新載入會打斷當下的動作，這種情況延後處理。
+                        applyUpdateWhenIdle();
                     }
                 });
             }
@@ -125,11 +124,7 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override public void run() {
                             if (web == null) return;
-                            if (updated) {
-                                web.loadUrl(UPDATED);       // 立即套用
-                                Toast.makeText(MainActivity.this, "已更新到最新版", Toast.LENGTH_SHORT).show();
-                                return;
-                            }
+                            if (updated) { applyUpdateWhenIdle(); return; }
                             String js = "window.__updateStatus && window.__updateStatus("
                                     + jsString(message) + "," + updated + ")";
                             web.evaluateJavascript(js, null);
@@ -138,6 +133,30 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    /**
+     * 套用更新前先問網頁端忙不忙。掃描中重新載入會中斷 video 的 play()，
+     * 使用者會看到莫名其妙的錯誤。忙碌就每兩秒再問一次，最多等一分鐘。
+     */
+    private void applyUpdateWhenIdle() { applyUpdateWhenIdle(0); }
+
+    private void applyUpdateWhenIdle(final int attempt) {
+        if (web == null || attempt > 30) return;
+        web.evaluateJavascript("(window.__busy && window.__busy()) ? 'busy' : 'idle'",
+                new android.webkit.ValueCallback<String>() {
+                    @Override public void onReceiveValue(String v) {
+                        if (web == null) return;
+                        if (v != null && v.contains("busy")) {
+                            web.postDelayed(new Runnable() {
+                                @Override public void run() { applyUpdateWhenIdle(attempt + 1); }
+                            }, 2000);
+                            return;
+                        }
+                        web.loadUrl(UPDATED);
+                        Toast.makeText(MainActivity.this, "已更新到最新版", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private static String jsString(String s) {

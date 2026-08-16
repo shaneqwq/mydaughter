@@ -2030,7 +2030,7 @@ function parseEInvoice(raw) {
 // ─── 掃描器 ───────────────────────────────────────────────────────────
 let scanStream = null, scanTimer = null, scanDetector = null, scanMode = 'auto';
 let scanTrack = null, scanNoHitSince = 0, scanHasTorch = false, scanTorchOn = false;
-let scanOpening = false;
+let scanOpening = false, scanLastError = '';
 
 // 等待授權／相機啟動時的提示。授權視窗通常馬上就跳出來，
 // 所以延遲一下再顯示，避免只是閃一下反而干擾。
@@ -2094,6 +2094,8 @@ async function toggleTorch() {
 }
 
 async function openScanner(mode) {
+  // 重複呼叫會讓後一次的 srcObject 打斷前一次的 play()
+  if (scanOpening || scanStream) return;
   scanMode = mode || 'auto';
 
   // 沒有原生 API 也還有 jsQR 可以解發票 QR，不需要直接放棄
@@ -2145,7 +2147,7 @@ async function openScanner(mode) {
 
     const v = document.getElementById('scanVideo');
     v.srcObject = scanStream;
-    await v.play();
+    await startVideo(v);
 
     showScanBusy(false);
     el.classList.add('on');          // 相機備妥才顯示掃描畫面
@@ -2160,7 +2162,10 @@ async function openScanner(mode) {
     const name = err && err.name;
     if (name === 'NotAllowedError')      alert('沒有相機權限，無法掃描。\n\n若要開啟，請到系統設定中允許本 App 使用相機。');
     else if (name === 'NotFoundError')   alert('找不到相機裝置。');
-    else                                 alert('無法開啟相機：' + (err && err.message ? err.message : name || '未知錯誤'));
+    else {
+      alert('相機開啟失敗，請再試一次。');
+      scanLastError = (err && (err.name + ': ' + err.message)) || String(err);   // 留給診斷用
+    }
   }
 }
 
@@ -2176,6 +2181,25 @@ function closeScanner() {
   const v = document.getElementById('scanVideo');
   if (v) v.srcObject = null;
   document.getElementById('scanner').classList.remove('on');
+}
+
+// 設定 srcObject 之後立刻 play() 很容易被新的載入請求打斷
+// （例如自動更新完成後重新載入頁面），拋出 AbortError。
+// 但畫面通常仍會正常播出，不該因此把整個掃描判定為失敗。
+async function startVideo(v) {
+  if (v.readyState < 1) {
+    await new Promise(res => {
+      let done = false;
+      const finish = () => { if (!done) { done = true; res(); } };
+      v.addEventListener('loadedmetadata', finish, { once: true });
+      setTimeout(finish, 3000);           // 保險，不要無限等
+    });
+  }
+  try { await v.play(); } catch (e) {}
+  if (v.paused) {                          // 被打斷就再試一次
+    try { await v.play(); } catch (e) {}
+  }
+  if (v.paused) throw new Error('相機畫面無法播放');
 }
 
 // 把畫面畫到 canvas 上交給 jsQR 解
@@ -2501,7 +2525,7 @@ window.__updateStatus = function (message, updated) {
 };
 
 // 內容版本：每次改動網頁時一併更新，方便確認手機上跑的是哪一版
-const CONTENT_VERSION = '2026-08-16g';
+const CONTENT_VERSION = '2026-08-16h';
 
 function initUpdateSection() {
   const el = document.getElementById('updateStatus');
@@ -2519,6 +2543,16 @@ function initUpdateSection() {
   } catch (e) {}
 }
 initUpdateSection();
+
+// 原生層在套用更新前會問一下。掃描中或有面板開著時重新載入，
+// 會打斷使用者當下的動作（play() 被中斷就是這樣來的）。
+window.__busy = function () {
+  try {
+    return !!(scanOpening || scanStream
+      || document.getElementById('scanner')?.classList.contains('on')
+      || document.getElementById('sheet')?.classList.contains('on'));
+  } catch (e) { return false; }
+};
 
 // ─── 掃描診斷 ─────────────────────────────────────────────────────────
 // 相機正常卻掃不到時，用來判斷是哪一層失效
@@ -2547,6 +2581,7 @@ async function runScanDiag() {
   } else {
     L.push('上次掃描：尚無紀錄（開一次掃描器再回來看）');
   }
+  if (scanLastError) L.push('最近一次錯誤：' + scanLastError);
   el.textContent = L.join('\n');
 }
 
