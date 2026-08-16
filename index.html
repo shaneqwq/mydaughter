@@ -520,20 +520,271 @@
     .week-bar.empty { background: rgba(25,25,38,.08); }
     .week-day { font-size: .68rem; color: var(--subtle); }
     .week-day.today-label { color: var(--primary-deep); font-weight: 600; }
+
+    /* ── 圖示 ── */
+    .ic { width: 1em; height: 1em; display: inline-block; vertical-align: -0.13em; flex-shrink: 0; }
+    .ic-lg { width: 21px; height: 21px; }
+    .ic-md { width: 18px; height: 18px; }
+    .ic-sm { width: 15px; height: 15px; }
+    .stat-icon .ic { width: 19px; height: 19px; color: var(--primary-deep); }
+    .section-label .ic { width: 14px; height: 14px; margin-right: 5px; vertical-align: -0.16em; color: var(--primary-deep); }
+    .empty-icon .ic { width: 30px; height: 30px; color: var(--faint); }
+    .set-icon .ic, .habit-emoji .ic, .budget-cat-icon .ic { width: 17px; height: 17px; color: var(--muted); }
+    .set-row.danger .set-icon .ic { color: var(--danger); }
+    .mood-btn .ic { width: 27px; height: 27px; color: var(--muted); }
+    .mood-btn.selected .ic { color: var(--primary-deep); }
+    .water-cup .ic { width: 19px; height: 19px; color: rgba(25,25,38,.16); transition: color .18s var(--ease); }
+    .water-cup.filled .ic { color: #38bdf8; }
+    .challenge-emoji .ic { width: 17px; height: 17px; color: var(--warning); }
+    .habit-streak .ic { width: 12px; height: 12px; color: var(--warning); vertical-align: -0.12em; margin-right: 3px; }
+    .sheet-title .ic { width: 19px; height: 19px; color: var(--primary-deep); vertical-align: -0.16em; margin-right: 6px; }
+    .app-title .ic { width: 15px; height: 15px; color: var(--primary-deep); vertical-align: -0.16em; margin-right: 5px; }
+    .btn-full .ic { width: 17px; height: 17px; vertical-align: -0.2em; margin-right: 7px; }
+    .reflect-q .ic { width: 14px; height: 14px; color: var(--primary-deep); vertical-align: -0.14em; margin-right: 5px; }
+
+    /* ── 掃描器 ── */
+    .scanner {
+      position: fixed; inset: 0; z-index: 300; display: none;
+      background: #000;
+    }
+    .scanner.on { display: block; }
+    #scanVideo { width: 100%; height: 100%; object-fit: cover; }
+    .scan-mask {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 22px;
+    }
+    .scan-frame {
+      width: 250px; height: 250px; border-radius: 22px;
+      border: 2px solid rgba(255,255,255,.85);
+      box-shadow: 0 0 0 100vmax rgba(0,0,0,.55);
+      position: relative; overflow: hidden;
+    }
+    .scan-line {
+      position: absolute; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, #818cf8, transparent);
+      box-shadow: 0 0 12px #818cf8;
+      animation: sweep 2.2s ease-in-out infinite;
+    }
+    @keyframes sweep { 0%,100% { top: 6%; } 50% { top: 94%; } }
+    .scan-hint {
+      color: #fff; font-size: .84rem; text-align: center;
+      padding: 9px 16px; border-radius: 99px;
+      background: rgba(0,0,0,.5); max-width: 86%; line-height: 1.5;
+    }
+    .scan-close {
+      position: absolute; top: calc(14px + env(safe-area-inset-top)); right: 14px;
+      width: 40px; height: 40px; border-radius: 50%; border: none;
+      background: rgba(0,0,0,.5); color: #fff; font-size: 1.1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── 底部面板 ── */
+    .sheet-backdrop {
+      position: fixed; inset: 0; z-index: 310;
+      background: rgba(25,25,38,.4); backdrop-filter: blur(3px);
+      opacity: 0; pointer-events: none; transition: opacity .25s var(--ease);
+    }
+    .sheet-backdrop.on { opacity: 1; pointer-events: auto; }
+    .sheet {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 320;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+      border-radius: 24px 24px 0 0;
+      border-top: 1px solid var(--line);
+      box-shadow: 0 -8px 40px rgba(80,84,160,.22);
+      padding: 10px 16px calc(20px + env(safe-area-inset-bottom));
+      max-height: 86dvh; overflow-y: auto;
+      transform: translateY(100%); transition: transform .3s var(--ease);
+    }
+    .sheet.on { transform: none; }
+    .sheet-grip {
+      width: 38px; height: 4px; border-radius: 99px;
+      background: rgba(25,25,38,.18); margin: 0 auto 16px;
+    }
+    .sheet-title { font-size: 1.02rem; font-weight: 650; margin-bottom: 4px; }
+    .sheet-sub { font-size: .76rem; color: var(--subtle); margin-bottom: 16px; }
+    .sheet-amount {
+      font-size: 2.1rem; font-weight: 700; letter-spacing: -.04em;
+      color: var(--text); font-variant-numeric: tabular-nums; margin: 2px 0 4px;
+    }
+    .sheet-field { margin-bottom: 11px; }
+    .sheet-label { font-size: .74rem; color: var(--subtle); margin-bottom: 5px; }
+    .sheet-row { display: flex; gap: 8px; min-width: 0; }
+    .kv {
+      display: flex; justify-content: space-between; gap: 12px;
+      padding: 9px 0; border-bottom: 1px solid var(--divider); font-size: .82rem;
+    }
+    .kv:last-child { border-bottom: none; }
+    .kv-k { color: var(--subtle); flex-shrink: 0; }
+    .kv-v {
+      color: var(--text); text-align: right; min-width: 0;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    .sheet-btns { display: flex; gap: 9px; margin-top: 18px; }
+    .btn-ghost {
+      flex: 1; height: 44px; border-radius: var(--radius-sm);
+      font-size: .88rem; font-weight: 600; font-family: inherit; cursor: pointer;
+      background: rgba(255,255,255,.7); color: var(--muted);
+      border: 1px solid rgba(25,25,38,.10);
+    }
+    .code-box {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: .76rem; color: var(--muted); line-height: 1.5;
+      background: rgba(25,25,38,.045); border-radius: var(--radius-xs);
+      padding: 10px 12px; word-break: break-all; max-height: 130px; overflow-y: auto;
+    }
+
+    /* ── 物品 ── */
+    .item-row {
+      display: flex; align-items: center; gap: 11px;
+      padding: 12px 0; border-bottom: 1px solid var(--divider); min-width: 0;
+    }
+    .item-row:last-child { border-bottom: none; }
+    .item-qty {
+      width: 34px; height: 34px; flex-shrink: 0; border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,.8); border: 1px solid rgba(255,255,255,.9);
+      box-shadow: var(--lift-sm);
+      font-size: .8rem; font-weight: 650; color: var(--primary-deep);
+      font-variant-numeric: tabular-nums;
+    }
+    .item-info { flex: 1; min-width: 0; }
+    .item-name { font-size: .875rem; font-weight: 550; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .item-meta { font-size: .715rem; color: var(--subtle); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .item-meta .warn { color: var(--danger); font-weight: 600; }
+    .item-meta .soon { color: var(--warning); font-weight: 600; }
+    .step-btn {
+      width: 27px; height: 27px; border-radius: 8px; flex-shrink: 0;
+      border: 1px solid rgba(25,25,38,.10); background: rgba(255,255,255,.75);
+      color: var(--muted); font-size: .95rem; font-family: inherit; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .step-btn:active { background: #fff; }
   </style>
 </head>
 <body>
+
+<!-- ══ 圖示集（自繪，24×24，線條風格）══ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<g id="s" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></g>
+</defs>
+
+<symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/></symbol>
+
+<symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M8 12.2l2.7 2.7L16.2 9.4"/></symbol>
+
+<symbol id="i-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8c.6 3.2 2.6 4.2 4 6a6.8 6.8 0 1 1-11.4 5 7.6 7.6 0 0 1 2-5c.2 1.3.9 2.2 1.9 2.5-.4-3.6 1.2-6.6 3.5-8.5z"/><path d="M12 20.6a3.3 3.3 0 0 0 2.6-5.3c-.7-.9-1.6-1.3-2-2.6-.9.9-1.9 1.9-2.4 3.1a3.3 3.3 0 0 0 1.8 4.8z"/></symbol>
+
+<symbol id="i-drop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8l5 6.6a6.4 6.4 0 1 1-10 0z"/><path d="M9 14.4a3.2 3.2 0 0 0 2.2 2.9"/></symbol>
+
+<symbol id="i-wallet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H18a2 2 0 0 1 2 2v1"/><rect x="3" y="7.5" width="18" height="12" rx="2.6"/><circle cx="16.5" cy="13.5" r="1.4"/></symbol>
+
+<symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></symbol>
+
+<symbol id="i-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 16V8a1.9 1.9 0 0 0-.95-1.64l-6.6-3.8a1.9 1.9 0 0 0-1.9 0l-6.6 3.8A1.9 1.9 0 0 0 3.5 8v8a1.9 1.9 0 0 0 .95 1.64l6.6 3.8a1.9 1.9 0 0 0 1.9 0l6.6-3.8A1.9 1.9 0 0 0 20.5 16z"/><path d="M3.8 7.2L12 11.9l8.2-4.7"/><path d="M12 21.4V11.9"/></symbol>
+
+<symbol id="i-pen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 4.5H5a2 2 0 0 0-2 2V19a2 2 0 0 0 2 2h12.5a2 2 0 0 0 2-2v-6.4"/><path d="M18.2 3.3a2.1 2.1 0 0 1 3 3L12.4 15l-3.9 1 1-3.9z"/></symbol>
+
+<symbol id="i-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2l2.7 5.6 6 .8-4.4 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1L3.3 9.6l6-.8z"/></symbol>
+
+<symbol id="i-timer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.5h5"/><circle cx="12" cy="13.5" r="8"/><path d="M12 9.8v3.7l2.4 1.6"/><path d="M18.8 6.6l1.5-1.5"/></symbol>
+
+<symbol id="i-trophy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 5.5H4.6a1 1 0 0 0-1 1.1c.2 1.9 1.2 3.6 3.4 4"/><path d="M17 5.5h2.4a1 1 0 0 1 1 1.1c-.2 1.9-1.2 3.6-3.4 4"/><path d="M12 14v3.5"/><path d="M8.5 21h7l-.7-3.5H9.2z"/></symbol>
+
+<symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.3A8.6 8.6 0 0 1 9.7 3.5a8.8 8.8 0 1 0 10.8 10.8z"/></symbol>
+
+<symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><circle cx="12" cy="12" r="4.8"/><circle cx="12" cy="12" r="1.3"/></symbol>
+
+<symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13.2 2.5L4.6 13.4h6.3l-.9 8.1 8.6-10.9h-6.3z"/></symbol>
+
+<symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 15.8v3.1a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-3.1"/><path d="M16.6 8.1L12 3.4 7.4 8.1"/><path d="M12 3.4v12.4"/></symbol>
+
+<symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 15.8v3.1a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-3.1"/><path d="M7.4 11.1L12 15.8l4.6-4.7"/><path d="M12 15.8V3.4"/></symbol>
+
+<symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18.2 10.4a6.2 6.2 0 1 0-12.4 0c0 5.3-2.2 6.9-2.2 6.9h16.8s-2.2-1.6-2.2-6.9z"/><path d="M13.7 20.4a1.95 1.95 0 0 1-3.4 0"/></symbol>
+
+<symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.8 6.3h16.4"/><path d="M18.5 6.3v13.2a1.9 1.9 0 0 1-1.9 1.9H7.4a1.9 1.9 0 0 1-1.9-1.9V6.3"/><path d="M8.4 6.3V4.4a1.9 1.9 0 0 1 1.9-1.9h3.4a1.9 1.9 0 0 1 1.9 1.9v1.9"/><path d="M10.3 11v5.7M13.7 11v5.7"/></symbol>
+
+<symbol id="i-scan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8V5.5A2.5 2.5 0 0 1 5.5 3H8"/><path d="M16 3h2.5A2.5 2.5 0 0 1 21 5.5V8"/><path d="M21 16v2.5a2.5 2.5 0 0 1-2.5 2.5H16"/><path d="M8 21H5.5A2.5 2.5 0 0 1 3 18.5V16"/><path d="M3.5 12h17"/></symbol>
+
+<symbol id="i-receipt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2.8v18.4l2.3-1.5 2.4 1.5 2.3-1.5 2.4 1.5 2.3-1.5 2.3 1.5V2.8l-2.3 1.5-2.3-1.5-2.4 1.5-2.3-1.5-2.4 1.5z"/><path d="M8.6 9.2h6.8M8.6 13.4h4.6"/></symbol>
+
+<symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.8" cy="10.8" r="7.3"/><path d="M20.5 20.5l-4.5-4.5"/></symbol>
+
+<symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8.6 6.4h11.9M8.6 12h11.9M8.6 17.6h11.9"/><circle cx="4.3" cy="6.4" r="1.2"/><circle cx="4.3" cy="12" r="1.2"/><circle cx="4.3" cy="17.6" r="1.2"/></symbol>
+
+<symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 18.4a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2V9.3a2 2 0 0 1 2-2h2.8l1.6-2.4h5.2l1.6 2.4h2.8a2 2 0 0 1 2 2z"/><circle cx="12" cy="13.4" r="3.6"/></symbol>
+
+<!-- 記帳分類 -->
+<symbol id="i-food" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2.8v7.6a2.6 2.6 0 0 0 5.2 0V2.8"/><path d="M7.6 10.4V21.2"/><path d="M16.6 2.8c-1.6 0-2.6 2.4-2.6 5.6 0 2.3.9 3.4 2.6 3.4V21.2"/><path d="M19.2 2.8V11.8"/></symbol>
+
+<symbol id="i-car" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.4v2.2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-2.2"/><path d="M22 16.4v2.2a1 1 0 0 1-1 1h-.5a1 1 0 0 1-1-1v-2.2"/><path d="M2 16.4v-4l2.3-5.2a2 2 0 0 1 1.8-1.2h11.8a2 2 0 0 1 1.8 1.2L22 12.4v4z"/><path d="M2.6 12.4h18.8"/><circle cx="6.6" cy="14.4" r="1"/><circle cx="17.4" cy="14.4" r="1"/></symbol>
+
+<symbol id="i-bag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7.6h14l1.2 12a1.6 1.6 0 0 1-1.6 1.8H5.4a1.6 1.6 0 0 1-1.6-1.8z"/><path d="M8.6 10V6.6a3.4 3.4 0 0 1 6.8 0V10"/></symbol>
+
+<symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.2 10.2L12 3.2l8.8 7v9.4a1.8 1.8 0 0 1-1.8 1.8H5a1.8 1.8 0 0 1-1.8-1.8z"/><path d="M9.4 21.4v-7.2h5.2v7.2"/></symbol>
+
+<symbol id="i-health" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.4 5.9a5.1 5.1 0 0 0-7.2 0L12 7.1l-1.2-1.2a5.1 5.1 0 0 0-7.2 7.2l1.2 1.2L12 21.5l7.2-7.2 1.2-1.2a5.1 5.1 0 0 0 0-7.2z"/></symbol>
+
+<symbol id="i-game" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6.8 11.4v3.2M5.2 13h3.2"/><circle cx="16.2" cy="12.2" r=".9"/><circle cx="18.6" cy="14.6" r=".9"/><path d="M17.5 19.4H6.5A4.5 4.5 0 0 1 2 14.9v-1.4a5.1 5.1 0 0 1 5.1-5.1h9.8a5.1 5.1 0 0 1 5.1 5.1v1.4a4.5 4.5 0 0 1-4.5 4.5z"/></symbol>
+
+<symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 4.6A1.6 1.6 0 0 1 5 3h5.4a3 3 0 0 1 1.6 2.6v14a2.4 2.4 0 0 0-1.6-1.2H5a1.6 1.6 0 0 1-1.6-1.6z"/><path d="M20.6 4.6A1.6 1.6 0 0 0 19 3h-5.4A3 3 0 0 0 12 5.6v14a2.4 2.4 0 0 1 1.6-1.2H19a1.6 1.6 0 0 0 1.6-1.6z"/></symbol>
+
+<symbol id="i-dots" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="5.5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18.5" cy="12" r="1.4"/></symbol>
+
+<symbol id="i-briefcase" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.6" y="7.2" width="18.8" height="13.2" rx="2.2"/><path d="M8.4 7.2V5.1a2 2 0 0 1 2-2h3.2a2 2 0 0 1 2 2v2.1"/><path d="M2.6 12.8h18.8"/></symbol>
+
+<symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17.4l5.4-5.4 3.4 3.4 6.6-6.8"/><path d="M14.6 8.6h4.4V13"/></symbol>
+
+<symbol id="i-gift" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.8" y="8.2" width="18.4" height="4.4" rx="1.2"/><path d="M4.6 12.6v7a1.8 1.8 0 0 0 1.8 1.8h11.2a1.8 1.8 0 0 0 1.8-1.8v-7"/><path d="M12 8.2v13.2"/><path d="M12 8.2H7.8a2.6 2.6 0 1 1 0-5.2C11 3 12 8.2 12 8.2z"/><path d="M12 8.2h4.2a2.6 2.6 0 1 0 0-5.2C13 3 12 8.2 12 8.2z"/></symbol>
+
+<symbol id="i-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9.4 19h5.2"/><path d="M10.2 21.6h3.6"/><path d="M12 2.6a6.4 6.4 0 0 0-3.8 11.5c.6.5.9 1.1.9 1.7v.6h5.8v-.6c0-.6.3-1.2.9-1.7A6.4 6.4 0 0 0 12 2.6z"/></symbol>
+
+<symbol id="i-coins" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="9" cy="6.6" rx="6" ry="2.8"/><path d="M3 6.6v4.2c0 1.5 2.7 2.8 6 2.8s6-1.3 6-2.8V6.6"/><path d="M15 11.4c2.9.2 5 1.4 5 2.7 0 1.5-2.7 2.8-6 2.8-1.3 0-2.5-.2-3.5-.5"/><path d="M9 13.6v3.8c0 1.5 2.7 2.8 6 2.8s6-1.3 6-2.8v-3.3"/></symbol>
+
+<!-- 習慣 -->
+<symbol id="i-run" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="15.4" cy="4.4" r="1.9"/><path d="M12.6 21l1.6-5.2-3.2-2.8.9-4.6"/><path d="M7 21l2.6-4.4"/><path d="M11.9 8.4L8.2 9.8l-1.4 3"/><path d="M11.9 8.4l3.6 1.2 2.2 3.2 2.9.8"/></symbol>
+
+<symbol id="i-lotus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.9" r="2.1"/><path d="M12 9v5.2"/><path d="M6.4 11.2L12 13.6l5.6-2.4"/><path d="M12 14.2l-4.4 3.2M12 14.2l4.4 3.2"/><path d="M4.6 20.4h14.8"/></symbol>
+
+<symbol id="i-pill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="1.6" y="8.2" width="20.8" height="7.6" rx="3.8" transform="rotate(-45 12 12)"/><path d="M8.6 8.6l6.8 6.8"/></symbol>
+
+<symbol id="i-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.4 3.6c0 9.4-4.8 14.2-11.6 14.2a5.8 5.8 0 0 1-5.8-5.8C3 6.4 9.6 3.6 20.4 3.6z"/><path d="M3.6 20.4C7 15.4 11 12.4 16.4 10.4"/></symbol>
+
+<symbol id="i-music" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5.4l11-2v12.2"/><circle cx="6.4" cy="18" r="2.6"/><circle cx="17.4" cy="15.6" r="2.6"/></symbol>
+
+<symbol id="i-dumbbell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2.6 9.4v5.2M5.8 7v10M18.2 7v10M21.4 9.4v5.2"/><path d="M5.8 12h12.4"/></symbol>
+
+<!-- 心情 -->
+<symbol id="i-m1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M8.4 14.2a4.4 4.4 0 0 0 7.2 0"/><circle cx="9.1" cy="9.8" r=".95" fill="currentColor" stroke="none"/><circle cx="14.9" cy="9.8" r=".95" fill="currentColor" stroke="none"/></symbol>
+
+<symbol id="i-m2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M7.6 13.4h8.8a4.4 4.4 0 0 1-8.8 0z"/><path d="M7.4 9.2l1.8-1.4 1.8 1.4M13 9.2l1.8-1.4 1.8 1.4"/></symbol>
+
+<symbol id="i-m3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M8.6 15h6.8"/><circle cx="9.1" cy="9.8" r=".95" fill="currentColor" stroke="none"/><circle cx="14.9" cy="9.8" r=".95" fill="currentColor" stroke="none"/></symbol>
+
+<symbol id="i-m4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M8.4 16.2a4.4 4.4 0 0 1 7.2 0"/><circle cx="9.1" cy="9.8" r=".95" fill="currentColor" stroke="none"/><circle cx="14.9" cy="9.8" r=".95" fill="currentColor" stroke="none"/></symbol>
+
+<symbol id="i-m5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M8.4 16.4a4.4 4.4 0 0 1 7.2 0"/><path d="M7.2 8l2.8 1.4M16.8 8L14 9.4"/><circle cx="9.3" cy="11.4" r=".9" fill="currentColor" stroke="none"/><circle cx="14.7" cy="11.4" r=".9" fill="currentColor" stroke="none"/></symbol>
+</svg>
 
 <!-- Header -->
 <div class="app-header">
   <div class="header-top">
     <div>
-      <div class="app-title">🌟 我的生活助手</div>
+      <div class="app-title"><svg class="ic"><use href="#i-star"/></svg>我的生活助手</div>
       <div class="header-date" id="headerDate"></div>
     </div>
+    <div style="display:flex;gap:8px">
+    <button class="icon-btn" onclick="openScanner()" title="掃描">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+    </button>
     <button class="icon-btn" onclick="openSettings()" title="設定">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
+    </div>
   </div>
   <div class="header-greeting" id="headerGreeting"></div>
   <div class="header-time" id="headerTime"></div>
@@ -547,25 +798,25 @@
     <p class="section-label">今日概覽</p>
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-icon">✅</div>
+        <div class="stat-icon"><svg class="ic"><use href="#i-check"/></svg></div>
         <div class="stat-value" id="stat-todo">0</div>
         <div class="stat-label">待辦完成率</div>
         <div class="progress-bar mt-8"><div class="progress-fill" id="prog-todo" style="width:0%"></div></div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon">🔥</div>
+        <div class="stat-icon"><svg class="ic"><use href="#i-flame"/></svg></div>
         <div class="stat-value" id="stat-habit">0</div>
         <div class="stat-label">習慣完成</div>
         <div class="progress-bar mt-8"><div class="progress-fill" id="prog-habit" style="width:0%"></div></div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon">💧</div>
+        <div class="stat-icon"><svg class="ic"><use href="#i-drop"/></svg></div>
         <div class="stat-value" id="stat-water">0</div>
         <div class="stat-label">今日喝水 (杯)</div>
         <div class="progress-bar mt-8"><div class="progress-fill" id="prog-water" style="width:0%"></div></div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon">💰</div>
+        <div class="stat-icon"><svg class="ic"><use href="#i-wallet"/></svg></div>
         <div class="stat-value" id="stat-budget">$0</div>
         <div class="stat-label">本月結餘</div>
         <div class="progress-bar mt-8"><div class="progress-fill" id="prog-budget" style="width:0%"></div></div>
@@ -574,13 +825,7 @@
 
     <p class="section-label">今日心情</p>
     <div class="card">
-      <div class="mood-row">
-        <button class="mood-btn" data-mood="😊" onclick="setMood('😊',this)">😊</button>
-        <button class="mood-btn" data-mood="😄" onclick="setMood('😄',this)">😄</button>
-        <button class="mood-btn" data-mood="😐" onclick="setMood('😐',this)">😐</button>
-        <button class="mood-btn" data-mood="😔" onclick="setMood('😔',this)">😔</button>
-        <button class="mood-btn" data-mood="😤" onclick="setMood('😤',this)">😤</button>
-      </div>
+      <div class="mood-row" id="moodRow"></div>
       <div class="mood-log" id="moodLog">點擊選擇今天的心情</div>
     </div>
 
@@ -599,7 +844,7 @@
 
     <p class="section-label">近期待辦</p>
     <div class="card" id="dash-todos">
-      <div class="empty"><div class="empty-icon">📋</div>無待辦事項</div>
+      <div class="empty"><div class="empty-icon"><svg class="ic"><use href="#i-list"/></svg></div>無待辦事項</div>
     </div>
   </div>
 
@@ -608,7 +853,7 @@
     <p class="section-label">資料備份</p>
     <div class="card">
       <div class="set-row" onclick="exportData()">
-        <div class="set-icon">📤</div>
+        <div class="set-icon"><svg class="ic"><use href="#i-upload"/></svg></div>
         <div class="set-info">
           <div class="set-name">匯出備份檔</div>
           <div class="set-desc">下載所有資料，換手機或清快取前先存一份</div>
@@ -616,7 +861,7 @@
         <div class="set-arrow">›</div>
       </div>
       <div class="set-row" onclick="document.getElementById('importFile').click()">
-        <div class="set-icon">📥</div>
+        <div class="set-icon"><svg class="ic"><use href="#i-download"/></svg></div>
         <div class="set-info">
           <div class="set-name">匯入備份檔</div>
           <div class="set-desc">從備份檔還原資料（會覆蓋現有資料）</div>
@@ -629,7 +874,7 @@
     <p class="section-label">通知</p>
     <div class="card">
       <div class="set-row" onclick="askNotify()">
-        <div class="set-icon">🔔</div>
+        <div class="set-icon"><svg class="ic"><use href="#i-bell"/></svg></div>
         <div class="set-info">
           <div class="set-name">開啟番茄鐘通知</div>
           <div class="set-desc" id="notifyStatus">計時結束時通知你</div>
@@ -644,7 +889,7 @@
     <p class="section-label">危險操作</p>
     <div class="card">
       <div class="set-row danger" onclick="clearAllData()">
-        <div class="set-icon">🗑️</div>
+        <div class="set-icon"><svg class="ic"><use href="#i-trash"/></svg></div>
         <div class="set-info">
           <div class="set-name">清除所有資料</div>
           <div class="set-desc">無法復原，請先匯出備份</div>
@@ -678,7 +923,7 @@
       </div>
     </div>
     <div class="card" id="todoList">
-      <div class="empty"><div class="empty-icon">📋</div>還沒有待辦事項</div>
+      <div class="empty"><div class="empty-icon"><svg class="ic"><use href="#i-list"/></svg></div>還沒有待辦事項</div>
     </div>
   </div>
 
@@ -688,15 +933,18 @@
     <div class="card">
       <div class="add-form">
         <input type="text" id="habitName" placeholder="習慣名稱…" maxlength="30">
-        <select id="habitEmoji" class="select" style="flex:0 0 62px;font-size:1rem">
-          <option>🏃</option><option>📚</option><option>🧘</option><option>💊</option>
-          <option>🥗</option><option>😴</option><option>🖊️</option><option>🎵</option>
+        <select id="habitEmoji" class="select" style="flex:0 0 96px">
+          <option value="run">運動</option><option value="book">閱讀</option>
+          <option value="lotus">冥想</option><option value="pill">服藥</option>
+          <option value="leaf">飲食</option><option value="moon">睡眠</option>
+          <option value="pen">寫作</option><option value="music">音樂</option>
+          <option value="dumbbell">重訓</option><option value="drop">喝水</option>
         </select>
         <button class="add-btn" onclick="addHabit()">＋</button>
       </div>
     </div>
     <div class="card" id="habitList">
-      <div class="empty"><div class="empty-icon">🔥</div>新增你的習慣</div>
+      <div class="empty"><div class="empty-icon"><svg class="ic"><use href="#i-flame"/></svg></div>新增你的習慣</div>
     </div>
   </div>
 
@@ -750,7 +998,7 @@
     </div>
     <p class="section-label">本月記錄</p>
     <div class="card" id="budgetList">
-      <div class="empty"><div class="empty-icon">💰</div>尚無記帳記錄</div>
+      <div class="empty"><div class="empty-icon"><svg class="ic"><use href="#i-wallet"/></svg></div>尚無記帳記錄</div>
     </div>
   </div>
 
@@ -764,7 +1012,7 @@
     </div>
 
     <!-- Pomodoro -->
-    <p class="section-label">🍅 番茄鐘專注計時</p>
+    <p class="section-label"><svg class="ic"><use href="#i-timer"/></svg>番茄鐘專注計時</p>
     <div class="card">
       <div class="pomo-ring focus" id="pomoRing">
         <svg width="180" height="180" viewBox="0 0 180 180">
@@ -790,7 +1038,7 @@
     </div>
 
     <!-- Challenge Tracker -->
-    <p class="section-label">🏆 N天挑戰打卡</p>
+    <p class="section-label"><svg class="ic"><use href="#i-trophy"/></svg>N天挑戰打卡</p>
     <div class="card">
       <div class="add-form">
         <input type="text" id="chalName" placeholder="挑戰名稱（如：每天跑步）" maxlength="20">
@@ -804,22 +1052,22 @@
       </div>
     </div>
     <div class="card" id="challengeList">
-      <div class="empty"><div class="empty-icon">🏆</div>新增你的挑戰</div>
+      <div class="empty"><div class="empty-icon"><svg class="ic"><use href="#i-trophy"/></svg></div>新增你的挑戰</div>
     </div>
 
     <!-- Evening Reflection -->
-    <p class="section-label">🌙 今日反思復盤</p>
+    <p class="section-label"><svg class="ic"><use href="#i-moon"/></svg>今日反思復盤</p>
     <div class="card">
       <div class="reflect-block">
-        <div class="reflect-q">✅ 今天完成了什麼值得肯定的事？</div>
+        <div class="reflect-q"><svg class="ic"><use href="#i-check"/></svg>今天完成了什麼值得肯定的事？</div>
         <textarea class="reflect-input" id="ref1" placeholder="寫下來…" rows="2"></textarea>
       </div>
       <div class="reflect-block">
-        <div class="reflect-q">⚡ 今天有什麼拖延或沒做到的？原因是？</div>
+        <div class="reflect-q"><svg class="ic"><use href="#i-zap"/></svg>今天有什麼拖延或沒做到的？原因是？</div>
         <textarea class="reflect-input" id="ref2" placeholder="寫下來…" rows="2"></textarea>
       </div>
       <div class="reflect-block">
-        <div class="reflect-q">🎯 明天最重要的一件事是什麼？</div>
+        <div class="reflect-q"><svg class="ic"><use href="#i-target"/></svg>明天最重要的一件事是什麼？</div>
         <textarea class="reflect-input" id="ref3" placeholder="寫下來…" rows="2"></textarea>
       </div>
       <button class="btn-full" onclick="saveReflect()">儲存今日反思</button>
@@ -828,7 +1076,40 @@
 
   </div>
 
+  <!-- Items -->
+  <div class="page" id="page-items">
+    <div class="card">
+      <button class="btn-full" onclick="openScanner('barcode')"><svg class="ic"><use href="#i-camera"/></svg>掃描條碼新增物品</button>
+      <div class="add-form" style="margin:12px 0 0">
+        <input type="text" id="itemName" placeholder="或直接輸入物品名稱…" maxlength="40">
+        <button class="add-btn" onclick="addItem()">＋</button>
+      </div>
+    </div>
+
+    <p class="section-label">我的物品</p>
+    <div class="card" id="itemList">
+      <div class="empty"><div class="empty-icon"><svg class="ic"><use href="#i-box"/></svg></div>還沒有物品</div>
+    </div>
+  </div>
+
 </div><!-- end pages wrapper -->
+
+<!-- ── 掃描器 ── -->
+<div class="scanner" id="scanner">
+  <video id="scanVideo" playsinline muted></video>
+  <div class="scan-mask">
+    <div class="scan-frame"><div class="scan-line"></div></div>
+    <div class="scan-hint" id="scanHint">將條碼或發票 QR 對準框內</div>
+  </div>
+  <button class="scan-close" onclick="closeScanner()">✕</button>
+</div>
+
+<!-- ── 底部確認面板 ── -->
+<div class="sheet-backdrop" id="sheetBackdrop" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-grip"></div>
+  <div id="sheetBody"></div>
+</div>
 
 <!-- Bottom nav -->
 <nav class="bottom-nav">
@@ -852,6 +1133,10 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 1 0 7H6"/></svg>
     記帳
   </button>
+  <button class="nav-btn" onclick="showPage('items',this);renderItems()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+    物品
+  </button>
   <button class="nav-btn" onclick="showPage('discipline',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
     自律
@@ -869,6 +1154,14 @@ const S = {
   get: (k, def) => { try { const v=localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch(e){ return def; } },
   set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
 };
+
+// 已知圖示 id 就畫圖，否則原樣輸出（讓舊資料裡的 emoji 仍能顯示）
+const ICON_IDS = new Set(['run','book','lotus','pill','leaf','moon','pen','music','dumbbell','drop',
+  'food','car','bag','home','health','game','dots','briefcase','chart','gift','bulb','coins',
+  'check','flame','wallet','star','timer','trophy','target','zap','box','list','camera','receipt','search']);
+function iconOrText(v){
+  return ICON_IDS.has(v) ? `<svg class="ic"><use href="#i-${v}"/></svg>` : escHtml(String(v==null?'':v));
+}
 
 // ─── Date / time helpers ──────────────────────────────────────────────
 const weekDays = ['日','一','二','三','四','五','六'];
@@ -899,7 +1192,7 @@ function updateClock() {
     `${String(h).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   document.getElementById('headerDate').textContent =
     `${now.getFullYear()} 年 ${months[now.getMonth()]} 月 ${now.getDate()} 日　星期${weekDays[now.getDay()]}`;
-  const greeting = h<5?'夜深了 🌙':h<12?'早安 ☀️':h<14?'午安 🌤':h<18?'下午好 🌈':'晚安 🌙';
+  const greeting = h<5?'夜深了':h<12?'早安':h<14?'午安':h<18?'下午好':'晚安';
   document.getElementById('headerGreeting').textContent = greeting;
 }
 updateClock();
@@ -922,24 +1215,35 @@ function openSettings() {
 }
 
 // ─── Mood ─────────────────────────────────────────────────────────────
-function loadMood() {
-  const moods = S.get('moods',{});
-  const td = todayKey();
-  if(moods[td]) {
-    document.querySelectorAll('.mood-btn').forEach(b=>{
-      b.classList.toggle('selected', b.dataset.mood===moods[td].emoji);
-    });
-    document.getElementById('moodLog').textContent = `今天心情：${moods[td].emoji}  ${moods[td].time}`;
-  }
+const MOODS = [
+  ['m1','還不錯'], ['m2','很開心'], ['m3','普通'], ['m4','低落'], ['m5','煩躁']
+];
+// 舊資料存的是 emoji 字元，對應到新的圖示
+const MOOD_LEGACY = { '\u{1F60A}':'m1', '\u{1F604}':'m2', '\u{1F610}':'m3', '\u{1F614}':'m4', '\u{1F624}':'m5' };
+function moodId(v){ return MOOD_LEGACY[v] || v; }
+
+function renderMoodRow() {
+  const cur = moodId((S.get('moods',{})[todayKey()]||{}).emoji);
+  document.getElementById('moodRow').innerHTML = MOODS.map(([id,label])=>
+    `<button class="mood-btn${id===cur?' selected':''}" data-mood="${id}" title="${label}"
+       onclick="setMood('${id}',this)"><svg class="ic"><use href="#i-${id}"/></svg></button>`
+  ).join('');
 }
-function setMood(emoji, btn) {
+function moodLabel(id){ const m = MOODS.find(x=>x[0]===id); return m ? m[1] : ''; }
+
+function loadMood() {
+  renderMoodRow();
+  const rec = S.get('moods',{})[todayKey()];
+  if(rec) document.getElementById('moodLog').textContent =
+    `今天心情：${moodLabel(moodId(rec.emoji))}　${rec.time||''}`;
+}
+function setMood(id) {
   const moods = S.get('moods',{});
   const now = new Date();
-  moods[todayKey()] = { emoji, time: `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}` };
+  moods[todayKey()] = { emoji: id, time: `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}` };
   S.set('moods', moods);
-  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('selected'));
-  btn.classList.add('selected');
-  document.getElementById('moodLog').textContent = `今天心情：${emoji}`;
+  renderMoodRow();
+  document.getElementById('moodLog').textContent = `今天心情：${moodLabel(id)}`;
 }
 loadMood();
 
@@ -955,7 +1259,7 @@ function renderWater(count) {
   for(let i=0;i<8;i++){
     const d=document.createElement('div');
     d.className='water-cup'+(i<count?' filled':'');
-    d.textContent='💧';
+    d.innerHTML='<svg class="ic"><use href="#i-drop"/></svg>';
     d.onclick=()=>toggleWater(i+1);
     cups.appendChild(d);
   }
@@ -1016,7 +1320,7 @@ function renderTodos() {
   let filtered=todos;
   if(todoFilter==='pending') filtered=todos.filter(t=>!t.done);
   if(todoFilter==='done') filtered=todos.filter(t=>t.done);
-  if(!filtered.length){ list.innerHTML='<div class="empty"><div class="empty-icon">📋</div>沒有待辦事項</div>'; return; }
+  if(!filtered.length){ list.innerHTML='<div class="empty"><div class="empty-icon"><svg class="ic"><use href="#i-list"/></svg></div>沒有待辦事項</div>'; return; }
   list.innerHTML=filtered.map(t=>`
     <div class="todo-item">
       <div class="todo-check${t.done?' done':''}" onclick="toggleTodo(${t.id})"></div>
@@ -1066,17 +1370,17 @@ function habitStreak(records) {
 function renderHabits() {
   const habits=S.get('habits',[]);
   const list=document.getElementById('habitList');
-  if(!habits.length){ list.innerHTML='<div class="empty"><div class="empty-icon">🔥</div>新增你的習慣</div>'; return; }
+  if(!habits.length){ list.innerHTML='<div class="empty"><div class="empty-icon"><svg class="ic"><use href="#i-flame"/></svg></div>新增你的習慣</div>'; return; }
   const days=last7Days();
   list.innerHTML=habits.map(h=>{
     const td=todayKey();
     const streak=habitStreak(h.records);
     const dots=days.map((d,i)=>`<div class="habit-dot${h.records[d]?' done':''}${i===6?' today-dot':''}"></div>`).join('');
     return `<div class="habit-item">
-      <div class="habit-emoji">${h.emoji}</div>
+      <div class="habit-emoji">${iconOrText(h.emoji)}</div>
       <div class="habit-info">
         <div class="habit-name">${escHtml(h.name)}</div>
-        <div class="habit-streak">🔥 連續 ${streak} 天</div>
+        <div class="habit-streak"><svg class="ic"><use href="#i-flame"/></svg>連續 ${streak} 天</div>
         <div class="habit-dots" style="margin-top:6px">${dots}</div>
       </div>
       <button class="habit-toggle${h.records[td]?' on':''}" onclick="toggleHabitDay(${h.id})" title="今日打卡"></button>
@@ -1105,7 +1409,7 @@ function deleteNote(id) {
 function renderNotes() {
   const notes=S.get('notes',[]);
   const list=document.getElementById('notesList');
-  if(!notes.length){ list.innerHTML='<div class="card"><div class="empty"><div class="empty-icon">📝</div>尚無筆記</div></div>'; return; }
+  if(!notes.length){ list.innerHTML='<div class="card"><div class="empty"><div class="empty-icon"><svg class="ic"><use href="#i-pen"/></svg></div>尚無筆記</div></div>'; return; }
   list.innerHTML=notes.map(n=>`
     <div class="note-card">
       <button class="del-btn" onclick="deleteNote(${n.id})" style="background:rgba(0,0,0,.06)">✕</button>
@@ -1116,10 +1420,24 @@ function renderNotes() {
 renderNotes();
 
 // ─── Budget ───────────────────────────────────────────────────────────
-const cats = {
-  expense: ['🍔 餐飲','🚗 交通','🛍 購物','🏠 住房','🏥 醫療','🎮 娛樂','📚 教育','💸 其他'],
-  income:  ['💼 薪資','🏦 投資','🎁 禮金','💡 副業','💰 其他收入']
+// 分類：儲存純文字標籤，圖示另外查表（舊資料含 emoji 前綴也能對應）
+const CAT_ICON = {
+  '餐飲':'food','交通':'car','購物':'bag','住房':'home','醫療':'health',
+  '娛樂':'game','教育':'book','其他':'dots',
+  '薪資':'briefcase','投資':'chart','禮金':'gift','副業':'bulb','其他收入':'coins'
 };
+const cats = {
+  expense: ['餐飲','交通','購物','住房','醫療','娛樂','教育','其他'],
+  income:  ['薪資','投資','禮金','副業','其他收入']
+};
+// 舊紀錄的 cat 可能是 '🍔 餐飲'，取出後面的文字部分
+function catLabel(cat){
+  return String(cat==null?'':cat).replace(/^[^\p{L}]+/u,'').trim() || '其他';
+}
+function catIcon(cat){
+  const id = CAT_ICON[catLabel(cat)] || 'dots';
+  return `<svg class="ic"><use href="#i-${id}"/></svg>`;
+}
 function updateCatSelect() {
   const type=document.getElementById('budgetType').value;
   const sel=document.getElementById('budgetCat');
@@ -1158,13 +1476,13 @@ function renderBudget() {
   document.getElementById('budgetExpense').textContent=`$${expense.toLocaleString()}`;
   document.getElementById('budgetBalance').textContent=`$${balance.toLocaleString()}`;
   const list=document.getElementById('budgetList');
-  if(!records.length){ list.innerHTML='<div class="empty"><div class="empty-icon">💰</div>尚無記帳記錄</div>'; return; }
+  if(!records.length){ list.innerHTML='<div class="empty"><div class="empty-icon"><svg class="ic"><use href="#i-wallet"/></svg></div>尚無記帳記錄</div>'; return; }
   list.innerHTML=records.map(r=>`
     <div class="budget-item">
-      <div class="budget-cat-icon">${r.cat.split(' ')[0]}</div>
+      <div class="budget-cat-icon">${catIcon(r.cat)}</div>
       <div class="budget-item-info">
-        <div class="budget-item-desc">${r.desc||r.cat.split(' ').slice(1).join(' ')}</div>
-        <div class="budget-item-date">${r.cat.split(' ').slice(1).join(' ')} · ${fmtDate(r.ts)}</div>
+        <div class="budget-item-desc">${escHtml(r.desc||catLabel(r.cat))}</div>
+        <div class="budget-item-date">${escHtml(catLabel(r.cat))} · ${fmtDate(r.ts)}</div>
       </div>
       <div class="budget-item-amount ${r.type}">${r.type==='income'?'+':'-'}$${r.amount.toLocaleString()}</div>
       <button class="del-btn" onclick="deleteBudget(${r.id})">✕</button>
@@ -1210,7 +1528,7 @@ function refreshDashboard() {
   // Recent todos
   const recent=todos.filter(t=>!t.done).slice(0,4);
   const dashTodos=document.getElementById('dash-todos');
-  if(!recent.length){ dashTodos.innerHTML='<div class="empty"><div class="empty-icon">✅</div>全部完成！</div>'; return; }
+  if(!recent.length){ dashTodos.innerHTML='<div class="empty"><div class="empty-icon"><svg class="ic"><use href="#i-check"/></svg></div>全部完成！</div>'; return; }
   dashTodos.innerHTML=recent.map(t=>`
     <div class="todo-item">
       <div class="todo-check${t.done?' done':''}" onclick="toggleTodo(${t.id});refreshDashboard()"></div>
@@ -1318,14 +1636,14 @@ function pomoTick() {
     btn.textContent='▶ 開始休息';
     btn.className='pomo-btn start';
     renderPomoSessions();
-    pomoNotify('🍅 專注完成！',`休息 ${pomoRestMin} 分鐘吧`);
+    pomoNotify('專注完成',`休息 ${pomoRestMin} 分鐘吧`);
   } else {
     pomoPhase='focus';
     pomoSeconds=pomoFocusMin*60;
     document.getElementById('pomoRing').className='pomo-ring focus';
     btn.textContent='▶ 開始專注';
     btn.className='pomo-btn start';
-    pomoNotify('😌 休息結束','再來一個番茄鐘？');
+    pomoNotify('休息結束','再來一個番茄鐘？');
   }
   renderPomoTime();
 }
@@ -1360,7 +1678,7 @@ function renderPomoTime() {
   // 起始是完整的環，隨時間逐漸消耗（倒數計時的直覺方向）
   document.getElementById('pomoArc').style.strokeDashoffset=CIRC*(1-pomoSeconds/total);
   document.getElementById('pomoLabel').textContent=
-    pomoRunning ? (pomoPhase==='focus'?'專注中 🍅':'休息中 😌')
+    pomoRunning ? (pomoPhase==='focus'?'專注中':'休息中')
                 : (pomoPhase==='focus'?'準備專注':'準備休息');
 }
 
@@ -1396,7 +1714,7 @@ function renderWeekChart() {
 }
 
 // ─── 設定：備份 / 還原 / 通知 / 清除 ──────────────────────────────────
-const DATA_KEYS=['todos','habits','notes','budget','water','moods','challenges','reflects','pomodoros'];
+const DATA_KEYS=['todos','habits','notes','budget','water','moods','challenges','reflects','pomodoros','items'];
 
 function exportData() {
   const dump={ _app:'我的生活助手', _version:1, _exportedAt:new Date().toISOString() };
@@ -1417,14 +1735,14 @@ function importData(input) {
   reader.onload=()=>{
     let data;
     try { data=JSON.parse(reader.result); }
-    catch(e){ alert('❌ 檔案格式不正確，請選擇匯出的備份檔'); input.value=''; return; }
+    catch(e){ alert('檔案格式不正確，請選擇匯出的備份檔'); input.value=''; return; }
     if(!data || data._app!=='我的生活助手') {
       if(!confirm('這個檔案不像是本 App 的備份檔，仍要匯入嗎？')) { input.value=''; return; }
     }
     if(!confirm('匯入會覆蓋目前所有資料，確定嗎？')) { input.value=''; return; }
     DATA_KEYS.forEach(k=>{ if(data[k]!=null) S.set(k,data[k]); });
     input.value='';
-    alert('✅ 匯入完成！');
+    alert('匯入完成');
     location.reload();
   };
   reader.readAsText(file);
@@ -1432,7 +1750,7 @@ function importData(input) {
 
 function askNotify() {
   if(!window.Notification) { alert('這個瀏覽器不支援通知功能'); return; }
-  if(Notification.permission==='granted') { alert('通知已經開啟了 ✅'); return; }
+  if(Notification.permission==='granted') { alert('通知已經開啟了'); return; }
   if(Notification.permission==='denied') {
     alert('通知已被封鎖，請到瀏覽器設定中重新允許本網站的通知');
     return;
@@ -1445,7 +1763,7 @@ function updateNotifyStatus() {
   if(!el) return;
   if(!window.Notification) { el.textContent='此瀏覽器不支援通知'; return; }
   el.textContent =
-    Notification.permission==='granted' ? '已開啟 ✅' :
+    Notification.permission==='granted' ? '已開啟' :
     Notification.permission==='denied'  ? '已封鎖，請到瀏覽器設定開啟' :
     '點擊開啟，計時結束時通知你';
 }
@@ -1454,24 +1772,395 @@ function renderDataStats() {
   const el=document.getElementById('dataStats');
   if(!el) return;
   const rows=[
-    ['✅','待辦事項',S.get('todos',[]).length+' 筆'],
-    ['🔥','習慣',S.get('habits',[]).length+' 個'],
-    ['🏆','挑戰',S.get('challenges',[]).length+' 個'],
-    ['📝','筆記',S.get('notes',[]).length+' 則'],
-    ['💰','記帳',S.get('budget',[]).length+' 筆'],
-    ['🌙','反思',S.get('reflects',[]).length+' 天'],
-    ['🍅','今日番茄鐘',pomoTodayCount()+' 個'],
+    ['check','待辦事項',S.get('todos',[]).length+' 筆'],
+    ['flame','習慣',S.get('habits',[]).length+' 個'],
+    ['trophy','挑戰',S.get('challenges',[]).length+' 個'],
+    ['pen','筆記',S.get('notes',[]).length+' 則'],
+    ['wallet','記帳',S.get('budget',[]).length+' 筆'],
+    ['moon','反思',S.get('reflects',[]).length+' 天'],
+    ['box','物品',S.get('items',[]).length+' 項'],
+    ['timer','今日番茄鐘',pomoTodayCount()+' 個'],
   ];
   el.innerHTML=rows.map(([icon,name,val])=>`
     <div class="set-row" style="cursor:default">
-      <div class="set-icon">${icon}</div>
+      <div class="set-icon"><svg class="ic"><use href="#i-${icon}"/></svg></div>
       <div class="set-info"><div class="set-name">${name}</div></div>
       <div class="text-sm">${val}</div>
     </div>`).join('');
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+//  掃描：發票 QR → 記帳，商品條碼 → 物品清單
+// ═══════════════════════════════════════════════════════════════════════
+
+// ─── 台灣電子發票 QR 解析 ─────────────────────────────────────────────
+// 左側 QR 前 77 碼為固定欄位：
+//   [0,10) 發票號碼  [10,17) 開立日期(民國)  [17,21) 隨機碼
+//   [21,29) 銷售額(hex)  [29,37) 總計額(hex)
+//   [37,45) 買方統編  [45,53) 賣方統編  [53,77) 加密驗證
+// 77 之後為營業人自訂區，以 ':' 分隔品項
+function parseEInvoice(raw) {
+  if (typeof raw !== 'string' || raw.length < 77) return null;
+  const s = raw.trim();
+
+  const number = s.slice(0, 10);
+  if (!/^[A-Z]{2}\d{8}$/.test(number)) return null;
+
+  const d = s.slice(10, 17);
+  if (!/^\d{7}$/.test(d)) return null;
+  const year  = parseInt(d.slice(0, 3), 10) + 1911;   // 民國 → 西元
+  const month = d.slice(3, 5), day = d.slice(5, 7);
+  if (+month < 1 || +month > 12 || +day < 1 || +day > 31) return null;
+
+  const totalHex = s.slice(29, 37);
+  if (!/^[0-9A-Fa-f]{8}$/.test(totalHex)) return null;
+  const total = parseInt(totalHex, 16);
+  if (!Number.isFinite(total) || total < 0) return null;
+
+  const salesHex = s.slice(21, 29);
+  const sales = /^[0-9A-Fa-f]{8}$/.test(salesHex) ? parseInt(salesHex, 16) : null;
+
+  const sellerVat = s.slice(45, 53).replace(/\s+$/, '');
+  const buyerVat  = s.slice(37, 45).replace(/\s+$/, '');
+
+  // 品項（讀不到也不影響金額與日期）
+  // 77 之後格式：營業人自訂區 : 分隔符號(**…) : 本碼筆數 : 總筆數 : 中文編碼 : 品名:數量:單價 …
+  // 自訂區可能有內容也可能空白，所以以「全是 * 的那一段」當定位點，而不是固定索引
+  let items = [];
+  try {
+    const rest = s.slice(77);
+    if (rest) {
+      const parts = rest.split(':');
+      const sep = parts.findIndex(p => /^\*+$/.test(p));
+      if (sep !== -1) {
+        const encoding = parts[sep + 3];        // 0=Big5 1=UTF-8 2=Base64
+        let body = parts.slice(sep + 4);
+        if (encoding === '2' && body.length) {
+          try {
+            const bin = atob(body.join(':'));
+            const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+            body = new TextDecoder('utf-8').decode(bytes).split(':');
+          } catch (e) { body = []; }
+        }
+        for (let i = 0; i < body.length; i += 3) {
+          const name = (body[i] || '').trim();
+          if (!name) continue;
+          items.push({ name, qty: body[i + 1] || '', price: body[i + 2] || '' });
+        }
+      }
+    }
+  } catch (e) { items = []; }
+
+  return {
+    number,
+    date: `${year}-${month}-${day}`,
+    month: `${year}-${month}`,
+    ts: new Date(year, +month - 1, +day, 12, 0, 0).getTime(),
+    total, sales, sellerVat, buyerVat, items
+  };
+}
+
+// ─── 掃描器 ───────────────────────────────────────────────────────────
+let scanStream = null, scanTimer = null, scanDetector = null, scanMode = 'auto';
+
+async function openScanner(mode) {
+  scanMode = mode || 'auto';
+
+  if (!('BarcodeDetector' in window)) {
+    alert('這個瀏覽器不支援掃描功能。\n請改用 Android 版 Chrome 開啟本 App。');
+    return;
+  }
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    alert('無法使用相機（需要 HTTPS 連線）。');
+    return;
+  }
+
+  const el = document.getElementById('scanner');
+  const hint = document.getElementById('scanHint');
+  hint.textContent = scanMode === 'barcode'
+    ? '將商品條碼對準框內'
+    : '將條碼或發票 QR 對準框內';
+  el.classList.add('on');
+
+  try {
+    const supported = await BarcodeDetector.getSupportedFormats();
+    const want = ['qr_code','ean_13','ean_8','upc_a','upc_e','code_128','code_39','itf'];
+    const formats = want.filter(f => supported.includes(f));
+    scanDetector = new BarcodeDetector(formats.length ? { formats } : undefined);
+
+    scanStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' } }, audio: false
+    });
+    const v = document.getElementById('scanVideo');
+    v.srcObject = scanStream;
+    await v.play();
+
+    scanTimer = setInterval(scanTick, 260);
+  } catch (err) {
+    closeScanner();
+    const name = err && err.name;
+    if (name === 'NotAllowedError')      alert('相機權限被拒絕。\n請到瀏覽器設定允許本網站使用相機。');
+    else if (name === 'NotFoundError')   alert('找不到相機裝置。');
+    else                                 alert('無法開啟相機：' + (err && err.message ? err.message : name || '未知錯誤'));
+  }
+}
+
+function closeScanner() {
+  clearInterval(scanTimer); scanTimer = null;
+  if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+  const v = document.getElementById('scanVideo');
+  if (v) v.srcObject = null;
+  document.getElementById('scanner').classList.remove('on');
+}
+
+async function scanTick() {
+  const v = document.getElementById('scanVideo');
+  if (!scanDetector || !v || v.readyState < 2) return;
+  let codes;
+  try { codes = await scanDetector.detect(v); } catch (e) { return; }
+  if (!codes || !codes.length) return;
+
+  const code = codes[0];
+  const value = code.rawValue || '';
+  if (!value) return;
+
+  try { if (navigator.vibrate) navigator.vibrate(90); } catch (e) {}
+  closeScanner();
+  handleScan(value, code.format);
+}
+
+// 掃到東西之後，決定要走記帳還是物品
+function handleScan(value, format) {
+  const inv = parseEInvoice(value);
+  if (inv && scanMode !== 'barcode') { sheetInvoice(inv); return; }
+  if (format === 'qr_code' && scanMode !== 'barcode') { sheetUnknown(value); return; }
+  sheetItem(value, format);
+}
+
+// ─── 底部面板 ─────────────────────────────────────────────────────────
+function openSheet(html) {
+  document.getElementById('sheetBody').innerHTML = html;
+  document.getElementById('sheetBackdrop').classList.add('on');
+  document.getElementById('sheet').classList.add('on');
+}
+function closeSheet() {
+  document.getElementById('sheetBackdrop').classList.remove('on');
+  document.getElementById('sheet').classList.remove('on');
+}
+
+// ─── 發票 → 記帳 ──────────────────────────────────────────────────────
+let pendingInvoice = null;
+
+function sheetInvoice(inv) {
+  pendingInvoice = inv;
+  const dup = S.get('budget', []).some(r => r.invoice === inv.number);
+  const itemLines = inv.items.slice(0, 6)
+    .map(it => `<div class="kv"><span class="kv-k">${escHtml(it.name)}</span><span class="kv-v">${escHtml(String(it.qty))} × ${escHtml(String(it.price))}</span></div>`)
+    .join('');
+
+  openSheet(`
+    <div class="sheet-title"><svg class="ic"><use href="#i-receipt"/></svg>掃到電子發票</div>
+    <div class="sheet-sub">確認後會存成一筆支出</div>
+    ${dup ? '<div class="sheet-sub" style="color:var(--danger)">這張發票已經記過了，再存會重複。</div>' : ''}
+    <div class="sheet-amount">$${inv.total.toLocaleString()}</div>
+    <div class="kv"><span class="kv-k">日期</span><span class="kv-v">${inv.date}</span></div>
+    <div class="kv"><span class="kv-k">發票號碼</span><span class="kv-v">${escHtml(inv.number)}</span></div>
+    ${inv.sellerVat ? `<div class="kv"><span class="kv-k">賣方統編</span><span class="kv-v">${escHtml(inv.sellerVat)}</span></div>` : ''}
+    ${itemLines ? `<div class="sheet-label" style="margin-top:14px">品項</div>${itemLines}` : ''}
+    ${inv.items.length > 6 ? `<div class="sheet-sub" style="margin-top:6px">…另有 ${inv.items.length - 6} 項</div>` : ''}
+
+    <div class="sheet-field" style="margin-top:16px">
+      <div class="sheet-label">分類</div>
+      <select class="select" id="invCat" style="width:100%">
+        ${cats.expense.map(c => `<option${c === '餐飲' ? ' selected' : ''}>${c}</option>`).join('')}
+      </select>
+    </div>
+    <div class="sheet-field">
+      <div class="sheet-label">描述</div>
+      <input class="budget-input" id="invDesc" style="width:100%"
+             value="${escHtml(inv.items.length ? inv.items[0].name : '')}" placeholder="例如：全聯購物">
+    </div>
+    <div class="sheet-btns">
+      <button class="btn-ghost" onclick="closeSheet()">取消</button>
+      <button class="btn-full" style="flex:1.4" onclick="saveInvoice()">存成支出</button>
+    </div>
+  `);
+}
+
+function saveInvoice() {
+  const inv = pendingInvoice;
+  if (!inv) return;
+  const cat  = document.getElementById('invCat').value;
+  const desc = document.getElementById('invDesc').value.trim();
+  const records = S.get('budget', []);
+  records.unshift({
+    id: Date.now(), type: 'expense', cat,
+    amount: inv.total, desc: desc || catLabel(cat),
+    ts: inv.ts, month: inv.month, invoice: inv.number
+  });
+  S.set('budget', records);
+  pendingInvoice = null;
+  closeSheet();
+  renderBudget(); refreshDashboard();
+  showPage('budget', document.querySelectorAll('.nav-btn')[4]);
+}
+
+// ─── 條碼 → 物品 ──────────────────────────────────────────────────────
+function sheetItem(code, format) {
+  const known = S.get('items', []).find(x => x.barcode === code);
+  openSheet(`
+    <div class="sheet-title"><svg class="ic"><use href="#i-box"/></svg>${known ? '這個物品已在清單中' : '新增物品'}</div>
+    <div class="sheet-sub">${escHtml(format || '條碼')} · ${escHtml(code)}</div>
+    ${known ? `
+      <div class="kv"><span class="kv-k">名稱</span><span class="kv-v">${escHtml(known.name)}</span></div>
+      <div class="kv"><span class="kv-k">目前數量</span><span class="kv-v">${known.qty}</span></div>
+      <div class="sheet-btns">
+        <button class="btn-ghost" onclick="closeSheet()">關閉</button>
+        <button class="btn-full" style="flex:1.4" onclick="bumpItemQty(${known.id},1);closeSheet();gotoItems()">數量 +1</button>
+      </div>
+    ` : `
+      <div class="sheet-field" style="margin-top:14px">
+        <div class="sheet-label">物品名稱</div>
+        <input class="budget-input" id="skName" style="width:100%" placeholder="例如：牛奶" autofocus>
+      </div>
+      <div class="sheet-row">
+        <div class="sheet-field" style="flex:0 0 88px">
+          <div class="sheet-label">數量</div>
+          <input class="budget-input" id="skQty" type="number" min="1" value="1" style="width:100%">
+        </div>
+        <div class="sheet-field" style="flex:1">
+          <div class="sheet-label">存放位置</div>
+          <input class="budget-input" id="skPlace" style="width:100%" placeholder="冰箱 / 儲藏室">
+        </div>
+      </div>
+      <div class="sheet-field">
+        <div class="sheet-label">到期日（選填）</div>
+        <input class="budget-input" id="skExp" type="date" style="width:100%">
+      </div>
+      <div class="sheet-btns">
+        <button class="btn-ghost" onclick="closeSheet()">取消</button>
+        <button class="btn-full" style="flex:1.4" onclick="saveScannedItem('${escHtml(code)}')">加入清單</button>
+      </div>
+    `}
+  `);
+}
+
+function saveScannedItem(code) {
+  const name = document.getElementById('skName').value.trim();
+  if (!name) { document.getElementById('skName').focus(); return; }
+  const items = S.get('items', []);
+  items.unshift({
+    id: Date.now(), name, barcode: code,
+    qty: Math.max(1, parseInt(document.getElementById('skQty').value, 10) || 1),
+    place: document.getElementById('skPlace').value.trim(),
+    expiry: document.getElementById('skExp').value || '',
+    ts: Date.now()
+  });
+  S.set('items', items);
+  closeSheet();
+  gotoItems();
+}
+
+// ─── 不認識的 QR ──────────────────────────────────────────────────────
+function sheetUnknown(value) {
+  const isUrl = /^https?:\/\//i.test(value);
+  openSheet(`
+    <div class="sheet-title"><svg class="ic"><use href="#i-search"/></svg>掃到 QR Code</div>
+    <div class="sheet-sub">不是電子發票格式，你可以存成筆記</div>
+    <div class="code-box">${escHtml(value)}</div>
+    ${isUrl ? `<div class="sheet-sub" style="margin-top:10px">這是一個網址</div>` : ''}
+    <div class="sheet-btns">
+      <button class="btn-ghost" onclick="closeSheet()">關閉</button>
+      <button class="btn-full" style="flex:1.4" onclick="saveScanAsNote()">存成筆記</button>
+    </div>
+  `);
+  window.__lastScan = value;
+}
+function saveScanAsNote() {
+  const v = window.__lastScan;
+  if (!v) return;
+  const notes = S.get('notes', []);
+  notes.unshift({ id: Date.now(), text: v, ts: Date.now() });
+  S.set('notes', notes);
+  closeSheet();
+  renderNotes();
+  showPage('notes', document.querySelectorAll('.nav-btn')[3]);
+}
+
+// ─── 物品清單 ─────────────────────────────────────────────────────────
+function gotoItems() {
+  renderItems();
+  showPage('items', document.querySelectorAll('.nav-btn')[6]);
+}
+
+function addItem() {
+  const input = document.getElementById('itemName');
+  const name = input.value.trim();
+  if (!name) return;
+  const items = S.get('items', []);
+  items.unshift({ id: Date.now(), name, barcode: '', qty: 1, place: '', expiry: '', ts: Date.now() });
+  S.set('items', items);
+  input.value = '';
+  renderItems();
+}
+
+function bumpItemQty(id, delta) {
+  const items = S.get('items', []);
+  const it = items.find(x => x.id === id);
+  if (!it) return;
+  it.qty = Math.max(0, (it.qty || 0) + delta);
+  S.set('items', items);
+  renderItems();
+}
+
+function deleteItem(id) {
+  S.set('items', S.get('items', []).filter(x => x.id !== id));
+  renderItems();
+}
+
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  const t = new Date(dateStr + 'T00:00:00').getTime();
+  if (!Number.isFinite(t)) return null;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  return Math.round((t - today.getTime()) / 86400000);
+}
+
+function renderItems() {
+  const items = S.get('items', []);
+  const list = document.getElementById('itemList');
+  if (!list) return;
+  if (!items.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon"><svg class="ic"><use href="#i-box"/></svg></div>還沒有物品</div>';
+    return;
+  }
+  list.innerHTML = items.map(it => {
+    const dLeft = daysUntil(it.expiry);
+    let expTxt = '';
+    if (dLeft !== null) {
+      if (dLeft < 0)       expTxt = `<span class="warn">已過期 ${-dLeft} 天</span>`;
+      else if (dLeft <= 3) expTxt = `<span class="warn">${dLeft === 0 ? '今天到期' : dLeft + ' 天後到期'}</span>`;
+      else if (dLeft <= 7) expTxt = `<span class="soon">${dLeft} 天後到期</span>`;
+      else                 expTxt = `${it.expiry} 到期`;
+    }
+    const meta = [escHtml(it.place), expTxt, it.barcode ? '<svg class="ic" style="width:11px;height:11px;opacity:.55"><use href="#i-camera"/></svg>' : ''].filter(Boolean).join(' · ');
+    return `<div class="item-row">
+      <div class="item-qty">${it.qty}</div>
+      <div class="item-info">
+        <div class="item-name">${escHtml(it.name)}</div>
+        ${meta ? `<div class="item-meta">${meta}</div>` : ''}
+      </div>
+      <button class="step-btn" onclick="bumpItemQty(${it.id},-1)">−</button>
+      <button class="step-btn" onclick="bumpItemQty(${it.id},1)">＋</button>
+      <button class="del-btn" onclick="deleteItem(${it.id})">✕</button>
+    </div>`;
+  }).join('');
+}
+renderItems();
+document.getElementById('itemName').addEventListener('keydown', e => { if (e.key === 'Enter') addItem(); });
+
 function clearAllData() {
-  if(!confirm('⚠️ 這會刪除所有資料且無法復原。\n\n建議先「匯出備份檔」。\n\n確定要清除嗎？')) return;
+  if(!confirm('這會刪除所有資料且無法復原。\n\n建議先「匯出備份檔」。\n\n確定要清除嗎？')) return;
   if(!confirm('再確認一次：真的要刪除全部資料嗎？')) return;
   DATA_KEYS.forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
   alert('已清除所有資料');
@@ -1509,7 +2198,7 @@ function deleteChallenge(id) {
 function renderChallenges() {
   const chals=S.get('challenges',[]);
   const list=document.getElementById('challengeList');
-  if(!chals.length){ list.innerHTML='<div class="empty"><div class="empty-icon">🏆</div>新增你的挑戰</div>'; return; }
+  if(!chals.length){ list.innerHTML='<div class="empty"><div class="empty-icon"><svg class="ic"><use href="#i-trophy"/></svg></div>新增你的挑戰</div>'; return; }
   const td=todayKey();
   list.innerHTML=chals.map(c=>{
     const done=Object.values(c.records).filter(Boolean).length;
@@ -1524,7 +2213,7 @@ function renderChallenges() {
     }).join('');
     return `<div class="challenge-item">
       <div class="challenge-header">
-        <div class="challenge-emoji">🏆</div>
+        <div class="challenge-emoji"><svg class="ic"><use href="#i-trophy"/></svg></div>
         <div class="challenge-info">
           <div class="challenge-name">${escHtml(c.name)}</div>
           <div class="challenge-sub">${done}/${c.days} 天完成（${pct}%）· 從 ${c.start} 開始</div>
@@ -1553,7 +2242,7 @@ function saveReflect() {
   document.getElementById('ref2').value='';
   document.getElementById('ref3').value='';
   renderReflects();
-  alert('✅ 今日反思已儲存！');
+  alert('今日反思已儲存');
 }
 
 function deleteReflect(id) {
